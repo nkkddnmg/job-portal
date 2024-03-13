@@ -1,0 +1,3 @@
+- link: http://localhost/job-portal/sign-in
+- admin account: admin@admin.com
+- password: 1
