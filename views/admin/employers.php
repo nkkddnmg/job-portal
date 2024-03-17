@@ -2,7 +2,7 @@
 <?php include("../../components/function_components.php"); ?>
 <?php
 if (!isset($_SESSION["id"])) {
-  header("location: ../../sign-in");
+  header("location: ../");
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
@@ -10,7 +10,7 @@ $pageName = "Employer Lists";
 ?>
 <!DOCTYPE html>
 
-<html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template-free">
+<html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-template="vertical-menu-template-free">
 
 <?= head($pageName) ?>
 
@@ -28,13 +28,17 @@ $pageName = "Employer Lists";
         <div class="content-wrapper">
           <div class="container-xxl flex-grow-1 container-p-y">
 
-            <h4 class="fw-bold py-3 mb-4">
-              <span class="text-muted fw-light"><?= $pageName ?></span>
-            </h4>
+            <div class="row">
+              <div class="col-6">
+                <h4 class="fw-bold py-3 mb-4">
+                  <span class="text-muted fw-light"><?= $pageName ?></span>
+                </h4>
+              </div>
+            </div>
 
             <div class="card">
               <div class="card-body">
-                <table id="admin-table" class="table table-striped nowrap">
+                <table id="employer-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
                       <th>Avatar</th>
@@ -47,6 +51,41 @@ $pageName = "Employer Lists";
                       <th>Actions</th>
                     </tr>
                   </thead>
+                  <tbody>
+                    <?php
+                    $employers = $helpers->select_all_with_params("users", "role='employer'");
+                    $modal_id = "employer-img-modal";
+                    $img_id = "employer-image";
+                    $caption_id = "employer-caption";
+                    if (count($employers) > 0) :
+                      foreach ($employers as $employer) :
+
+                    ?>
+                        <tr>
+                          <td class="td-image">
+                            <?= $helpers->generate_td_avatar($helpers->get_avatar_link($employer->id), $modal_id, $img_id, $caption_id) ?>
+                          </td>
+                          <td><?= $employer->fname ?></td>
+                          <td><?= empty($employer->mname) ? "<em class='text-muted'>N/A</em>" : $employer->mname ?></td>
+                          <td><?= $employer->lname ?></td>
+                          <td><?= $employer->address ?></td>
+                          <td><?= $employer->email ?></td>
+                          <td><?= date("m-d-Y", strtotime($employer->date_created)) ?></td>
+                          <td>
+                            <?php if ($employer->id != $LOGIN_USER->id) : ?>
+                              <button type="button" class="btn btn-primary" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$employer->id" ?>`'>
+                                View Profile
+                              </button>
+                            <?php else : ?>
+                              ---
+                            <?php endif; ?>
+                          </td>
+                        </tr>
+
+                      <?php endforeach; ?>
+                    <?php endif;
+                    ?>
+                  </tbody>
 
                 </table>
               </div>
@@ -60,6 +99,7 @@ $pageName = "Employer Lists";
     </div>
     <!-- / Layout page -->
   </div>
+  <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
 
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>
@@ -69,28 +109,44 @@ $pageName = "Employer Lists";
 <?php include("../../components/footer.php") ?>
 
 <script>
-  const adminTable = $("#admin-table").DataTable({
+  const employerTableCols = [1, 2, 3, 4, 5, 6];
+  const employerTable = $("#employer-table").DataTable({
     paging: true,
     lengthChange: true,
     ordering: false,
     info: true,
-    autoWidth: true,
+    autoWidth: false,
     responsive: true,
     language: {
       searchBuilder: {
         button: 'Filter',
       }
     },
-    buttons: ['print',
+    buttons: [{
+        extend: 'print',
+        title: '',
+        exportOptions: {
+          columns: employerTableCols
+        },
+        customize: function(win) {
+          $(win.document.body)
+            .css('font-size', '10pt')
+
+          $(win.document.body)
+            .find('table')
+            .addClass('compact')
+            .css('font-size', 'inherit');
+        }
+      },
       {
         extend: 'colvis',
         text: "Columns",
-        columns: [1, 2, 3]
+        columns: employerTableCols
       },
       {
         extend: 'searchBuilder',
         config: {
-          columns: [1, 2, 3]
+          columns: employerTableCols
         }
       }
     ],
@@ -98,7 +154,7 @@ $pageName = "Employer Lists";
       <'row'
       <'col-md-4 d-flex my-2 justify-content-start'B>
       <'col-md-4 d-flex my-2 justify-content-center'l>
-      <'col-md-4 d-flex my-2 justify-content-end'f>
+      <'col-md-4 d-flex my-2 justify-content-md-end justify-content-sm-center'f>
       >
       <'row'<'col-12'tr>>
       <'row'

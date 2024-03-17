@@ -57,6 +57,31 @@ class Helpers
     return $links;
   }
 
+  public function get_public_links()
+  {
+    $links = null;
+
+    $links = array(
+      array(
+        "title" => "Home",
+        "config" => array(
+          "url" => (SERVER_NAME . "/public/views/home"),
+          "is_dropdown" => false,
+          "is_logged_id_required" => false
+        )
+      ),
+      array(
+        "title" => "Job Listings",
+        "config" => array(
+          "url" => (SERVER_NAME . "/public/views/job-listing"),
+          "is_dropdown" => false,
+        )
+      ),
+
+    );
+    return $links;
+  }
+
   /**  custom builder */
 
   public function upload_file($file, $path)

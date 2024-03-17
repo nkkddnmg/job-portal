@@ -2,7 +2,7 @@
 <?php include("../components/function_components.php"); ?>
 <?php
 if (!isset($_SESSION["id"])) {
-  header("location: ../sign-in");
+  header("location: ../views/sign-in");
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);

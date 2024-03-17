@@ -2,7 +2,7 @@
 <?php include("../../components/function_components.php"); ?>
 <?php
 if (!isset($_SESSION["id"])) {
-  header("location: ../../sign-in");
+  header("location: ../sign-in");
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
@@ -114,13 +114,13 @@ $pageName = "Admin Lists";
 <?php include("../../components/footer.php") ?>
 
 <script>
-  const adminTableCols = [1, 2, 3, 4, 5];
+  const adminTableCols = [1, 2, 3, 4, 5, 6];
   const adminTable = $("#admin-table").DataTable({
     paging: true,
     lengthChange: true,
     ordering: false,
     info: true,
-    autoWidth: true,
+    autoWidth: false,
     responsive: true,
     language: {
       searchBuilder: {

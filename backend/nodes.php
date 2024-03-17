@@ -243,7 +243,7 @@ function logout()
 {
   global $helpers;
 
-  $helpers->user_logout("../sign-in");
+  $helpers->user_logout("../views/sign-in");
 }
 
 function registration()
@@ -258,9 +258,11 @@ function registration()
       "mname" => empty($_POST["mname"]) ? "set_null" : $_POST["mname"],
       "lname" => $_POST["lname"],
       "address" => $_POST["address"],
+      "contact" => $_POST["contact"],
       "email" => $_POST["email"],
       "password" => password_hash($_POST["password"], PASSWORD_ARGON2I),
       "role" => "applicant",
+      "is_verified" => "set_zero",
     );
 
     $comm = $helpers->insert("users", $registerData);

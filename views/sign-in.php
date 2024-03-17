@@ -1,5 +1,5 @@
-<?php include("./backend/nodes.php"); ?>
-<?php include("./components/function_components.php"); ?>
+<?php include("../backend/nodes.php"); ?>
+<?php include("../components/function_components.php"); ?>
 <!DOCTYPE html>
 
 <html lang="en" class="light-style customizer-hide" dir="ltr" data-theme="theme-default" data-template="vertical-menu-template-free">
@@ -37,14 +37,19 @@
                 </div>
               </div>
 
-              <div class="mb-3">
-                <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
+              <div class="row">
+                <div class="col-md-6">
+                  <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
+                </div>
+                <div class="col-md-6">
+                  <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">Cancel</button>
+                </div>
               </div>
             </form>
 
             <p class="text-center">
               <span>New on our platform?</span>
-              <a href=" <?= SERVER_NAME . "/sign-up" ?>">
+              <a href=" <?= SERVER_NAME . "/views/sign-up" ?>">
                 <span>Create an account</span>
               </a>
             </p>
@@ -57,9 +62,13 @@
 
 
 </body>
-<?php include("./components/footer.php") ?>
+<?php include("../components/footer.php") ?>
 
 <script>
+  const handleGoBackToPublicPage = () => {
+    window.location.href = '<?= SERVER_NAME . "/public/views/home" ?>'
+  }
+
   $("#form-sign-in").on("submit", function(e) {
     e.preventDefault()
     swal.showLoading()
@@ -75,7 +84,7 @@
         if (resp.success) {
           if (resp.role == "admin") {
             if (resp.is_password_change) {
-              window.location.href = "./views/admin/dashboard";
+              window.location.href = "./admin/dashboard";
             } else {
               swal.fire({
                   title: "Successfully Login",
@@ -89,14 +98,14 @@
                 })
                 .then((d) => {
                   if (d.isConfirmed) {
-                    window.location.href = "./views/profile";
+                    window.location.href = "./profile";
                   } else {
-                    window.location.href = "./views/admin/dashboard";
+                    window.location.href = "./admin/dashboard";
                   }
                 });
             }
           } else {
-            window.location.href = "./views/dashboard";
+            window.location.href = "./dashboard";
           }
         } else {
           swal.fire({

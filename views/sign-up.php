@@ -1,5 +1,5 @@
-<?php include("./backend/nodes.php"); ?>
-<?php include("./components/function_components.php"); ?>
+<?php include("../backend/nodes.php"); ?>
+<?php include("../components/function_components.php"); ?>
 <!DOCTYPE html>
 
 <html lang="en" class="light-style customizer-hide" dir="ltr" data-theme="theme-default" data-assets-path="./assets/" data-template="vertical-menu-template-free">
@@ -22,41 +22,52 @@
 
             <form id="form-sign-up" class="mb-3" method="POST">
 
-              <div class="mb-3">
+              <div class="mb-3 form-group">
                 <label for="fname" class="form-label">First name</label>
                 <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter your First name" required />
               </div>
-              <div class="mb-3">
+              <div class="mb-3 form-group">
                 <label for="mname" class="form-label">Middle name</label>
                 <input type="text" class="form-control" id="mname" name="mname" placeholder="Enter your Middle name" />
               </div>
-              <div class="mb-3">
+              <div class="mb-3 form-group">
                 <label for="lname" class="form-label">Last name</label>
-                <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter your Last name" />
+                <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter your Last name" required />
               </div>
-              <div class="mb-3">
+              <div class="mb-3 form-group">
                 <label for="address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="address" name="address" placeholder="Enter your Address" />
+                <input type="text" class="form-control" id="address" name="address" placeholder="Enter your Address" required />
               </div>
-              <div class="mb-3">
+              <div class="mb-3 form-group">
+                <label for="contact" class="form-label">Contact</label>
+                <input type="text" class="form-control" id="contact" name="contact" placeholder="Enter your Contact" required />
+              </div>
+              <div class="mb-3 form-group">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" />
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required />
               </div>
 
-              <div class="mb-3 form-password-toggle">
+              <div class="mb-3 form-password-toggle form-group">
                 <label class="form-label" for="password">Password</label>
                 <div class="input-group input-group-merge">
-                  <input type="password" id="password" class="form-control" name="password" aria-describedby="password" />
+                  <input type="password" id="password" class="form-control" name="password" aria-describedby="password" required />
                   <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                 </div>
               </div>
 
-              <button class="btn btn-primary d-grid w-100">Sign up</button>
+              <div class="row">
+                <div class="col-md-6">
+                  <button class="btn btn-primary d-grid w-100" type="submit">Sign up</button>
+                </div>
+                <div class="col-md-6">
+                  <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">Cancel</button>
+                </div>
+              </div>
             </form>
 
             <p class="text-center">
               <span>Already have an account?</span>
-              <a href="<?= SERVER_NAME . "/sign-in" ?>">
+              <a href="<?= SERVER_NAME . "/views/sign-in" ?>">
                 <span>Sign in instead</span>
               </a>
             </p>
@@ -68,8 +79,12 @@
   </div>
 
 </body>
-<?php include("./components/footer.php") ?>
+<?php include("../components/footer.php") ?>
 <script>
+  const handleGoBackToPublicPage = () => {
+    window.location.href = '<?= SERVER_NAME . "/public/views/home" ?>'
+  }
+
   $("#form-sign-up").on("submit", function(e) {
     e.preventDefault()
     swal.showLoading()
@@ -89,9 +104,9 @@
         }).then(() => {
           if (resp.success) {
             if (resp.role == "admin") {
-              window.location.href = "./views/admin";
+              window.location.href = "./admin";
             } else {
-              window.location.href = "./views/dashboard";
+              window.location.href = "./dashboard";
             }
           }
         })
