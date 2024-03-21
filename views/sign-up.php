@@ -56,10 +56,10 @@
               </div>
 
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-6 mt-2">
                   <button class="btn btn-primary d-grid w-100" type="submit">Sign up</button>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 mt-2">
                   <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">Cancel</button>
                 </div>
               </div>
@@ -106,7 +106,7 @@
             if (resp.role == "admin") {
               window.location.href = "./admin";
             } else {
-              window.location.href = "./dashboard";
+              window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>";
             }
           }
         })

@@ -1,5 +1,11 @@
 <?php include("../../backend/nodes.php"); ?>
 <?php include("../components/function_components.php"); ?>
+<?php
+$LOGIN_USER = null;
+if (isset($_SESSION["id"])) {
+  $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -228,19 +234,21 @@
       </div>
     </section>
 
-    <section class="py-5 bg-image overlay-primary fixed overlay" style="background-image: url('<?= SERVER_NAME . "/public/assets/images/hero_1.jpg" ?>');">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <h2 class="text-white">Looking For A Job?</h2>
-            <p class="mb-0 text-white lead">We Help To Get The Best Job And Find A Talent.</p>
-          </div>
-          <div class="col-md-3 ml-auto">
-            <a href="<?= SERVER_NAME . "/views/sign-up" ?>" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+    <?php if (!$LOGIN_USER) : ?>
+      <section class="py-5 bg-image overlay-primary fixed overlay" style="background-image: url('<?= SERVER_NAME . "/public/assets/images/hero_1.jpg" ?>');">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h2 class="text-white">Looking For A Job?</h2>
+              <p class="mb-0 text-white lead">We Help To Get The Best Job And Find A Talent.</p>
+            </div>
+            <div class="col-md-3 ml-auto">
+              <a href="<?= SERVER_NAME . "/views/sign-up" ?>" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    <?php endif; ?>
 
 
   </div>

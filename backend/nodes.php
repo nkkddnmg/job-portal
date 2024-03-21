@@ -9,7 +9,7 @@ try {
   $db = "job_portal";
 
   $conn = new mysqli($host, $user, $password, $db);
-  $helpers = new Helpers($conn);
+  $helpers = new Helpers($conn, $_SESSION);
 
   if (isset($_GET["action"])) {
 
@@ -38,6 +38,12 @@ try {
       case "login":
         login();
         break;
+      case "verify_account":
+        verify_account();
+        break;
+      case "check_verification_status":
+        check_verification_status();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -48,6 +54,63 @@ try {
   }
 } catch (Exception $e) {
   echo "<script>console.log(`" . ($e->getMessage()) . "`)</script>";
+}
+function check_verification_status()
+{
+  global $helpers, $_GET;
+
+  $user_data = $helpers->get_user_by_id($_GET["id"]);
+  $verification_data = $helpers->select_all_with_params("verification", "id=$user_data->verification_id");
+
+  $data = null;
+  if (count($verification_data) > 0) {
+    $data = $verification_data[0];
+  }
+
+  $helpers->return_response($data);
+}
+function verify_account()
+{
+  global $helpers, $_POST, $_FILES, $conn;
+
+  $token = $_POST["token"];
+  $selfie_input = $_FILES["selfie_input"];
+  $selfie_url = $_POST["selfie_url"];
+  $valid_id_input = $_FILES["valid_id_input"];
+  $valid_id_url = $_POST["valid_id_url"];
+
+  $path = "../uploads/verification";
+  $selfie_image = $helpers->upload_file($selfie_input, $path);
+  $valid_id_image = $helpers->upload_file($valid_id_input, $path);
+
+  $user_id = $helpers->decrypt($token);
+
+  $verificationData = array(
+    "selfie" => $selfie_image->success ? $selfie_image->file_name : $selfie_url,
+    "valid_id" => $valid_id_image->success ? $valid_id_image->file_name : $valid_id_url,
+    "status" => "pending",
+    "message" => "Waiting for admin to approved your account."
+  );
+
+  $insertVerification = $helpers->insert("verification", $verificationData);
+
+  if ($insertVerification) {
+
+    $updateUser = $helpers->update("users", array("verification_id" => $insertVerification), "id", $user_id);
+
+    if ($updateUser) {
+      $response["success"] = true;
+      $response["message"] = "Selfie and Valid ID successfully uploaded<br>Please wait for admin approval.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = $conn->error;
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
 }
 
 function add_admin()
@@ -242,8 +305,15 @@ function save_profile_image()
 function logout()
 {
   global $helpers;
+  $user = $helpers->get_current_user();
 
-  $helpers->user_logout("../views/sign-in");
+  $path = "../views/sign-in";
+
+  if ($user->role == "applicant") {
+    $path = "../public/views/home";
+  }
+
+  $helpers->user_logout($path);
 }
 
 function registration()
@@ -261,8 +331,7 @@ function registration()
       "contact" => $_POST["contact"],
       "email" => $_POST["email"],
       "password" => password_hash($_POST["password"], PASSWORD_ARGON2I),
-      "role" => "applicant",
-      "is_verified" => "set_zero",
+      "role" => "applicant"
     );
 
     $comm = $helpers->insert("users", $registerData);

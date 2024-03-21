@@ -4,10 +4,12 @@ class Helpers
 {
   private $separator = "!I_I!";
   private $conn;
+  private $session;
 
-  public function __construct($conn)
+  public function __construct($conn, $session)
   {
     $this->conn = $conn;
+    $this->session = $session;
 
     if ($_SERVER['HTTP_HOST'] == "localhost") {
       define("SERVER_NAME", "http://$_SERVER[SERVER_NAME]/job-portal");
@@ -67,7 +69,7 @@ class Helpers
         "config" => array(
           "url" => (SERVER_NAME . "/public/views/home"),
           "is_dropdown" => false,
-          "is_logged_id_required" => false
+          "is_logged_in_required" => false
         )
       ),
       array(
@@ -75,6 +77,15 @@ class Helpers
         "config" => array(
           "url" => (SERVER_NAME . "/public/views/job-listing"),
           "is_dropdown" => false,
+          "is_logged_in_required" => false,
+        )
+      ),
+      array(
+        "title" => "Company Reviews",
+        "config" => array(
+          "url" => "#"/*(SERVER_NAME . "/public/views/company-reviews")*/,
+          "is_dropdown" => false,
+          "is_logged_in_required" => false,
         )
       ),
 
@@ -83,6 +94,68 @@ class Helpers
   }
 
   /**  custom builder */
+
+  public function generate_image_upload(
+    $imageUploadDivId,
+    $title = "Upload Image",
+    $inputFileName = "image-file",
+    $inputUrlName = "image-url"
+  ) {
+    return ("
+          <div class='imageupload panel panel-default card' id='$imageUploadDivId'>
+            <div class='panel-heading clearfix card-header'>
+              <h4 class='panel-title pull-left card-title float-start h5'>$title</h4>
+              <div class='btn-group pull-right float-end'>
+                <button type='button' class='btn btn-outline-secondary active'>File</button>
+                <button type='button' class='btn btn-outline-secondary'>URL</button>
+              </div>
+            </div>
+            <div class='file-tab panel-body card-body'>
+              <label class='btn btn-outline-primary btn-file m-2'>
+                <span>Browse</span>
+                <input type='file' name='$inputFileName' accept='image/*'/>
+              </label>
+              <button type='button' class='btn btn-default btn-outline-danger m-2'>Remove</button>
+            </div>
+            <div class='url-tab panel-body card-body' style='display: none;'>
+              <div class='input-group'>
+                <input type='text' class='form-control hasclear' placeholder='Image URL' />
+                <button type='button' class='btn btn-default btn-outline-secondary'>Submit</button>
+              </div>
+              
+              <button type='button' class='btn btn-default btn-outline-danger m-2'>Remove</button>
+              
+              <input type='hidden' name='$inputUrlName' accept='image/*'/>
+            </div>
+          </div>
+    ");
+  }
+
+  public function encrypt($val)
+  {
+    $encrypt_method = "AES-256-CBC";
+    $secret_key = 'AA74CDCC2BBRT935136HH7B63C27';
+    $secret_iv = '5fgf5HJ5g27';
+
+    $key = hash('sha256', $secret_key);
+    $iv = substr(hash('sha256', $secret_iv), 0, 16);
+
+    $output = openssl_encrypt($val, $encrypt_method, $key, 0, $iv);
+
+    return base64_encode($output);
+  }
+
+  public function decrypt($val)
+  {
+    $encrypt_method = "AES-256-CBC";
+    $secret_key = 'AA74CDCC2BBRT935136HH7B63C27';
+    $secret_iv = '5fgf5HJ5g27';
+
+    $key = hash('sha256', $secret_key);
+    $iv = substr(hash('sha256', $secret_iv), 0, 16);
+
+    return openssl_decrypt(base64_decode($val), $encrypt_method, $key, 0, $iv);
+  }
 
   public function upload_file($file, $path)
   {
@@ -361,6 +434,15 @@ class Helpers
   {
     $params = $id ? "AND id <> $id" : "";
     $query = $this->conn->query("SELECT * FROM users WHERE email='$email' $params");
+
+    return $query->num_rows > 0 ? $query->fetch_object() : null;
+  }
+
+  public function get_current_user()
+  {
+    $id = $this->session["id"];
+
+    $query = $this->conn->query("SELECT * FROM users WHERE id='$id'");
 
     return $query->num_rows > 0 ? $query->fetch_object() : null;
   }

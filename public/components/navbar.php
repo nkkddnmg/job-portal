@@ -1,7 +1,7 @@
 <div class="site-mobile-menu site-navbar-target">
   <div class="site-mobile-menu-header">
     <div class="site-mobile-menu-close mt-3">
-      <span class="icon-close2 js-menu-toggle"></span>
+      <span class="icon-close2 js-menu-toggle" id="closeCanvas"></span>
     </div>
   </div>
   <div class="site-mobile-menu-body"></div>
@@ -28,7 +28,7 @@
               $dropdownActive = $helpers->is_self_in_dropdown($_SERVER["PHP_SELF"], $config->dropdown_data) ? "active" : "";
           ?>
               <li class="has-children">
-                <a href="javascript:void()" class="<?= $dropdownActive ?>">
+                <a href="javascript:void(0)" class="<?= $dropdownActive ?>">
                   <?= $menu->title ?>
                 </a>
                 <ul class="dropdown">
@@ -53,25 +53,52 @@
             <?php endif; ?>
           <?php endforeach ?>
 
-
-          <li class="d-lg-none">
-            <a href="<?= SERVER_NAME . "/views/sign-in" ?>">
-              Sign In
-            </a>
-          </li>
+          <?php if (!$LOGIN_USER) : ?>
+            <li class="d-lg-none">
+              <a href="<?= SERVER_NAME . "/views/sign-in" ?>"> Sign In </a>
+            </li>
+          <?php else : ?>
+            <li class="d-lg-none">
+              <a class="dropdown-item" href="#">My Profile</a>
+            </li>
+            <li class="d-lg-none">
+              <a class="dropdown-item" href="#">My Jobs</a>
+            </li>
+            <li class="d-lg-none">
+              <a class="dropdown-item" href="javascript:void(0)" onclick="handleCheckStatus(`<?= $LOGIN_USER->id ?>`)">Check Status</a>
+            </li>
+            <li class="d-lg-none">
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
+            </li>
+          <?php endif; ?>
         </ul>
       </nav>
 
       <div class="right-cta-menu text-right d-flex aligin-items-center col-6">
         <div class="ml-auto">
-
-          <a href="<?= SERVER_NAME . "/views/sign-in" ?>" class="btn btn-primary border-width-2 d-none d-lg-inline-block">
-            <span class="mr-2 icon-lock_outline"></span>
-            Sign In
-          </a>
+          <?php if (!$LOGIN_USER) : ?>
+            <a href=" <?= SERVER_NAME . "/views/sign-in" ?>" class="btn btn-primary border-width-2 d-none d-lg-inline-block">
+              <span class="mr-2 icon-lock_outline"></span>
+              Sign In
+            </a>
+          <?php else : ?>
+            <div class="avatar d-none d-lg-inline-block" id="avatarDropdown" data-toggle="dropdown"><!-- avatar-online -->
+              <img src="<?= $helpers->get_avatar_link($LOGIN_USER->id) ?>" class="avatar rounded-circle" style="object-fit: cover" />
+            </div>
+            <div class="dropdown-menu" aria-labelledby="avatarDropdown">
+              <h4 class="dropdown-header h4">
+                <strong><?= $LOGIN_USER->email ?></strong>
+              </h4>
+              <a class="dropdown-item" href="#">My Profile</a>
+              <a class="dropdown-item" href="#">My Jobs</a>
+              <a class="dropdown-item" href="javascript:void(0)" onclick="handleCheckStatus(`<?= $LOGIN_USER->id ?>`)">Check Status</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
+            </div>
+          <?php endif; ?>
         </div>
 
-        <a href="javascript:void()" class="site-menu-toggle js-menu-toggle d-inline-block d-xl-none mt-lg-2 ml-3">
+        <a href="javascript:void(0)" class="site-menu-toggle js-menu-toggle d-inline-block d-xl-none mt-lg-2 ml-3">
           <span class="icon-menu h3 m-0 p-0 mt-2"></span>
         </a>
       </div>

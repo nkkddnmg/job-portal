@@ -46,3 +46,5 @@
 <script src="https://cdn.datatables.net/datetime/1.5.2/js/dataTables.dateTime.min.js"></script>
 
 <!-- End Data tables -->
+
+<script src="<?= SERVER_NAME . "/custom-assets/components/image-upload/js/bootstrap-imageupload.min.js" ?>"></script>

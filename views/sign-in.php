@@ -38,10 +38,10 @@
               </div>
 
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-6 mt-2">
                   <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 mt-2">
                   <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">Cancel</button>
                 </div>
               </div>
@@ -84,7 +84,7 @@
         if (resp.success) {
           if (resp.role == "admin") {
             if (resp.is_password_change) {
-              window.location.href = "./admin/dashboard";
+              window.location.href = "<?= SERVER_NAME . "/views/admin/dashboard" ?>";
             } else {
               swal.fire({
                   title: "Successfully Login",
@@ -98,14 +98,14 @@
                 })
                 .then((d) => {
                   if (d.isConfirmed) {
-                    window.location.href = "./profile";
+                    window.location.href = "<?= SERVER_NAME . "/views/profile" ?>";
                   } else {
-                    window.location.href = "./admin/dashboard";
+                    window.location.href = "<?= SERVER_NAME . "/views/admin/dashboard" ?>";
                   }
                 });
             }
           } else {
-            window.location.href = "./dashboard";
+            window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>";
           }
         } else {
           swal.fire({

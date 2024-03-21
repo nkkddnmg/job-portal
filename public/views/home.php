@@ -1,5 +1,11 @@
 <?php include("../../backend/nodes.php"); ?>
 <?php include("../components/function_components.php"); ?>
+<?php
+$LOGIN_USER = null;
+if (isset($_SESSION["id"])) {
+  $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -69,7 +75,7 @@
 
           <div class="col mb-5 mb-lg-0">
             <div class="d-flex align-items-center justify-content-center mb-2">
-              <img src="<?= SERVER_NAME . "/public/assets/images/user.png" ?>" class="img-thumbnail border-0 bg-transparent" >
+              <img src="<?= SERVER_NAME . "/public/assets/images/user.png" ?>" class="img-thumbnail border-0 bg-transparent">
             </div>
             <span class="h5 text-white">Create an Account</span>
           </div>
@@ -80,7 +86,7 @@
 
           <div class="col mb-5 mb-lg-0">
             <div class="d-flex align-items-center justify-content-center mb-2">
-              <img src="<?= SERVER_NAME . "/public/assets/images/search.png" ?>" class="img-thumbnail border-0 bg-transparent" >
+              <img src="<?= SERVER_NAME . "/public/assets/images/search.png" ?>" class="img-thumbnail border-0 bg-transparent">
             </div>
             <span class="h5 text-white">Find your job</span>
           </div>
@@ -91,7 +97,7 @@
 
           <div class="col mb-5 mb-lg-0">
             <div class="d-flex align-items-center justify-content-center mb-2">
-              <img src="<?= SERVER_NAME . "/public/assets/images/file.png" ?>" class="img-thumbnail border-0 bg-transparent" >
+              <img src="<?= SERVER_NAME . "/public/assets/images/file.png" ?>" class="img-thumbnail border-0 bg-transparent">
             </div>
             <span class="h5 text-white">CV/ Resume</span>
           </div>
@@ -102,7 +108,7 @@
 
           <div class="col mb-5 mb-lg-0">
             <div class="d-flex align-items-center justify-content-center mb-2">
-              <img src="<?= SERVER_NAME . "/public/assets/images/checked.png" ?>" class="img-thumbnail border-0 bg-transparent" >
+              <img src="<?= SERVER_NAME . "/public/assets/images/checked.png" ?>" class="img-thumbnail border-0 bg-transparent">
             </div>
             <span class="h5 text-white">Apply</span>
           </div>
@@ -264,24 +270,24 @@
       </div>
     </section>
 
-    <section class="py-5 bg-image overlay-primary fixed overlay" style="background-image: url('<?= SERVER_NAME . "/public/assets/images/hero_1.jpg" ?>');">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <h2 class="text-white">Looking For A Job?</h2>
-            <p class="mb-0 text-white lead">We Help To Get The Best Job And Find A Talent.</p>
-          </div>
-          <div class="col-md-3 ml-auto">
-            <a href="<?= SERVER_NAME . "/views/sign-up" ?>" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+    <?php if (!$LOGIN_USER) : ?>
+      <section class="py-5 bg-image overlay-primary fixed overlay" style="background-image: url('<?= SERVER_NAME . "/public/assets/images/hero_1.jpg" ?>');">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h2 class="text-white">Looking For A Job?</h2>
+              <p class="mb-0 text-white lead">We Help To Get The Best Job And Find A Talent.</p>
+            </div>
+            <div class="col-md-3 ml-auto">
+              <a href="<?= SERVER_NAME . "/views/sign-up" ?>" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-
+      </section>
+    <?php endif; ?>
 
     <section class="site-section py-4">
       <div class="container">
-
         <div class="row align-items-center">
           <div class="col-12 text-center mt-4 mb-5">
             <div class="row justify-content-center">

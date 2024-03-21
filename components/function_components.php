@@ -34,6 +34,7 @@ function head(string $title)
     <link rel='stylesheet' href='https://cdn.datatables.net/searchbuilder/1.7.0/css/searchBuilder.bootstrap5.css' />
     <link rel='stylesheet' href='https://cdn.datatables.net/datetime/1.5.2/css/dataTables.dateTime.min.css' />
 
+    <link rel='stylesheet' href='$serverName/custom-assets/components/image-upload/css/bootstrap-imageupload.min.css'>
   </head>
   ";
 }
