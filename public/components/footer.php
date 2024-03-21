@@ -58,7 +58,6 @@
           imageWidth: "40%",
           confirmButtonText: "Close"
         })
-        console.log(res)
       })
   }
 
