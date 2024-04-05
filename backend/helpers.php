@@ -6,6 +6,16 @@ class Helpers
   private $conn;
   private $session;
 
+  public $addressList = array(
+    "Arevalo Iloilo City",
+    "Iloilo City Proper",
+    "Jaro Iloilo City",
+    "La Paz Iloilo City",
+    "Lapuz Iloilo City",
+    "Mandurriao Iloilo City",
+    "Molo Iloilo City"
+  );
+
   public function __construct($conn, $session)
   {
     $this->conn = $conn;
@@ -27,7 +37,7 @@ class Helpers
         array(
           "title" => "Dashboard",
           "config" => array(
-            "icon" => "bx bx-home-circle",
+            "icon" => "bx bxs-home-circle",
             "url" => (SERVER_NAME . "/views/admin/dashboard"),
             "is_dropdown" => false
           )
@@ -35,13 +45,13 @@ class Helpers
         array(
           "title" => "Users",
           "config" => array(
-            "icon" => "bx bx-group",
+            "icon" => "bx bxs-group",
             "is_dropdown" => true,
             "dropdown_data" => array(
-              array(
-                "title" => "Admins",
-                "url" => (SERVER_NAME . "/views/admin/admins")
-              ),
+              // array(
+              //   "title" => "Admins",
+              //   "url" => (SERVER_NAME . "/views/admin/admins")
+              // ),
               array(
                 "title" => "Employers",
                 "url" => (SERVER_NAME . "/views/admin/employers")
@@ -53,7 +63,74 @@ class Helpers
             )
           )
         ),
+        array(
+          "title" => "Verifications",
+          "config" => array(
+            "icon" => "bx bxs-shield-x",
+            "url" => (SERVER_NAME . "/views/admin/company-verification"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Companies",
+          "config" => array(
+            "icon" => "bx bxs-buildings",
+            "url" => (SERVER_NAME . "/views/admin/companies"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Industries",
+          "config" => array(
+            "icon" => "bx bxs-factory",
+            "url" => (SERVER_NAME . "/views/admin/industries"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Denied Companies",
+          "config" => array(
+            "icon" => "bx bxs-user-x",
+            "url" => (SERVER_NAME . "/views/admin/denied-companies"),
+            "is_dropdown" => false
+          )
+        ),
 
+      );
+    } else if ($user == "employer") {
+      $links = array(
+        array(
+          "title" => "Dashboard",
+          "config" => array(
+            "icon" => "bx bxs-home-circle",
+            "url" => (SERVER_NAME . "/views/dashboard"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Candidates",
+          "config" => array(
+            "icon" => "bx bxs-user-account",
+            "url" => (SERVER_NAME . "/views/admin/candidates"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Employees",
+          "config" => array(
+            "icon" => "bx bxs-buildings",
+            "url" => (SERVER_NAME . "/views/admin/employees"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Jobs",
+          "config" => array(
+            "icon" => "bx bxs-briefcase",
+            "url" => (SERVER_NAME . "/views/admin/jobs"),
+            "is_dropdown" => false
+          )
+        ),
       );
     }
     return $links;
@@ -93,37 +170,92 @@ class Helpers
     return $links;
   }
 
+  public function generate_company_logo($isButtonVisible, $src, $user_id, $rounded = true)
+  {
+    $backendUrl = (SERVER_NAME . "/backend/nodes");
+    $resetBtnVisibility = !$src ? "d-none" : "";
+    $roundedImg = $rounded ? "rounded" : "rounded-circle";
+
+    return ("
+        <div class='card-body'>
+            <div class='d-flex align-items-start align-items-sm-center gap-4'>
+              <img src='$src' alt='user-avatar' class='d-block $roundedImg' height='100' width='100' style='object-fit: cover' id='uploadedCompany' />
+              " . ($isButtonVisible ? "
+              <div class='button-wrapper'>
+
+                <label for='company_img_upload' class='btn btn-primary me-2 mb-4' tabindex='0'>
+                  <span class='d-none d-sm-block'>Upload new photo</span>
+                  <i class='bx bx-upload d-block d-sm-none'></i>
+
+                  <input type='file' id='company_img_upload' class='account-file-input' onchange='handleCompanyChangeImage($(this), `uploadedCompany`, `$backendUrl`, `upload`, `$user_id`)' accept='image/png, image/jpeg' name='company_img_upload' hidden />
+                </label>
+
+                <button type='button' class='btn btn-outline-danger account-image-reset mb-4 $resetBtnVisibility' id='btnReset' onclick='handleCompanyChangeImage($(this), `uploadedCompany`, `$backendUrl`, `reset`, `$user_id`)'>
+                  <i class='bx bx-reset d-block d-sm-none'></i>
+                  <span class='d-none d-sm-block'>Reset</span>
+                </button>
+
+                <p class='text-muted mb-0'>Allowed JPG or PNG</p>
+              </div>
+              " : "") . "
+            </div>
+        </div>
+        <hr class='my-0' />
+    ");
+  }
+
+  public function get_company_logo_link($company_id)
+  {
+    $company = $this->select_custom_fields_with_params("company", array("id", "company_logo"), "id='$company_id'");
+
+    if (count($company) > 0) {
+      if ($company[0]->company_logo) {
+        return SERVER_NAME . ("/uploads/company/" . $company[0]->company_logo);
+      }
+    }
+
+    return SERVER_NAME . "/custom-assets/images/office.png";
+  }
+
   /**  custom builder */
 
   public function generate_image_upload(
     $imageUploadDivId,
     $title = "Upload Image",
     $inputFileName = "image-file",
-    $inputUrlName = "image-url"
+    $inputUrlName = "image-url",
+    $cancelButtonConfig = array(
+      "show" => false,
+      "onclick" => ""
+    )
   ) {
+
+    $cancelButton = $cancelButtonConfig["show"] ? "<button type='button' class='btn btn-outline-danger btn-sm' onclick='$cancelButtonConfig[onclick]'>Cancel</button>" : "";
+
     return ("
           <div class='imageupload panel panel-default card' id='$imageUploadDivId'>
             <div class='panel-heading clearfix card-header'>
-              <h4 class='panel-title pull-left card-title float-start h5'>$title</h4>
+              <span class='panel-title pull-left card-title float-start'>$title</span>
               <div class='btn-group pull-right float-end'>
-                <button type='button' class='btn btn-outline-secondary active'>File</button>
-                <button type='button' class='btn btn-outline-secondary'>URL</button>
+                <button type='button' class='btn btn-outline-secondary btn-sm active'>File</button>
+                <button type='button' class='btn btn-outline-secondary btn-sm'>URL</button>
+                $cancelButton
               </div>
             </div>
             <div class='file-tab panel-body card-body'>
-              <label class='btn btn-outline-primary btn-file m-2'>
+              <label class='btn btn-outline-primary btn-sm btn-file m-2'>
                 <span>Browse</span>
                 <input type='file' name='$inputFileName' accept='image/*'/>
               </label>
-              <button type='button' class='btn btn-default btn-outline-danger m-2'>Remove</button>
+              <button type='button' class='btn btn-default btn-sm btn-outline-danger m-2'>Remove</button>
             </div>
             <div class='url-tab panel-body card-body' style='display: none;'>
               <div class='input-group'>
-                <input type='text' class='form-control hasclear' placeholder='Image URL' />
-                <button type='button' class='btn btn-default btn-outline-secondary'>Submit</button>
+                <input type='text' class='form-control hasclear form-control-sm' placeholder='Image URL' />
+                <button type='button' class='btn btn-default btn-sm btn-outline-secondary'>Submit</button>
               </div>
               
-              <button type='button' class='btn btn-default btn-outline-danger m-2'>Remove</button>
+              <button type='button' class='btn btn-default btn-sm btn-outline-danger m-2'>Remove</button>
               
               <input type='hidden' name='$inputUrlName' accept='image/*'/>
             </div>
@@ -183,22 +315,26 @@ class Helpers
     return (object) $res;
   }
 
-  public function generate_profile_avatar($isButtonVisible, $src, $user_id)
+  public function generate_avatar($isButtonVisible, $src, $user_id, $rounded = true)
   {
     $backendUrl = (SERVER_NAME . "/backend/nodes");
     $resetBtnVisibility = !$src ? "d-none" : "";
+    $roundedImg = $rounded ? "rounded" : "rounded-circle";
 
     return ("
         <div class='card-body'>
             <div class='d-flex align-items-start align-items-sm-center gap-4'>
-              <img src='$src' alt='user-avatar' class='d-block rounded' height='100' width='100' style='object-fit: cover' id='uploadedAvatar' />
+              <img src='$src' alt='user-avatar' class='d-block $roundedImg' height='100' width='100' style='object-fit: cover' id='uploadedAvatar' />
               " . ($isButtonVisible ? "
               <div class='button-wrapper'>
+
                 <label for='img_upload' class='btn btn-primary me-2 mb-4' tabindex='0'>
                   <span class='d-none d-sm-block'>Upload new photo</span>
                   <i class='bx bx-upload d-block d-sm-none'></i>
+
                   <input type='file' id='img_upload' class='account-file-input' onclick='handleInputClick()' onchange='handleChangeImage($(this), `uploadedAvatar`, `$backendUrl`, `upload`, `$user_id`)' accept='image/png, image/jpeg' name='img_upload' hidden />
                 </label>
+
                 <button type='button' class='btn btn-outline-danger account-image-reset mb-4 $resetBtnVisibility' id='btnReset' onclick='handleChangeImage($(this), `uploadedAvatar`, `$backendUrl`, `reset`, `$user_id`)'>
                   <i class='bx bx-reset d-block d-sm-none'></i>
                   <span class='d-none d-sm-block'>Reset</span>
@@ -213,13 +349,13 @@ class Helpers
     ");
   }
 
-  public function generate_td_avatar($src, $modal_id, $img_id, $caption_id)
+  public function generate_modal_click_avatar($src, $modal_id, $img_id, $caption_id)
   {
     $explodedSrc = explode("/", $src);
     $alt = count($explodedSrc) > 0 ? $explodedSrc[count($explodedSrc) - 1] : "image.jpg";
 
     return "
-        <img src='$src' onclick='handleOpenModalImg($(this), `$modal_id`, `$img_id`, `$caption_id`)' class='avatar avatar-md rounded-circle me-2' alt='$alt'>
+        <img src='$src' onclick='handleOpenModalImg($(this), `$modal_id`, `$img_id`, `$caption_id`)' class='avatar avatar-md rounded me-2' alt='$alt'>
   ";
   }
 
@@ -301,6 +437,22 @@ class Helpers
     }
 
     return null;
+  }
+
+  public function select_all_individual($table, $params)
+  {
+    $query = $this->conn->query("SELECT * FROM $table WHERE $params");
+
+    return $query->num_rows > 0 ? $query->fetch_object() : null;
+  }
+
+  public function select_custom_fields_individual($table, array $fields, $params)
+  {
+    $customFields = implode(",", $fields);
+
+    $query = $this->conn->query("SELECT $customFields FROM $table WHERE $params");
+
+    return $query->num_rows > 0 ? $query->fetch_object() : null;
   }
 
   public function select_all($table)

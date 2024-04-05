@@ -20,6 +20,9 @@ try {
       case "change_password":
         change_password();
         break;
+      case "delete_profile":
+        delete_profile();
+        break;
       case "delete_data":
         delete_data();
         break;
@@ -44,6 +47,24 @@ try {
       case "check_verification_status":
         check_verification_status();
         break;
+      case "get_all_companies":
+        get_all_companies();
+        break;
+      case "register_company":
+        register_company();
+        break;
+      case "save_company_image":
+        save_company_image();
+        break;
+      case "company_save":
+        company_save();
+        break;
+      case "verify_company":
+        verify_company();
+        break;
+      case "save_industry":
+        save_industry();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -55,12 +76,322 @@ try {
 } catch (Exception $e) {
   echo "<script>console.log(`" . ($e->getMessage()) . "`)</script>";
 }
+
+function save_industry()
+{
+  global $helpers, $_POST, $conn;
+
+  $action = $_POST["action"];
+  $name = $_POST["name"];
+  $params = isset($_POST["id"]) ? " AND id <> '$_POST[id]'" : "";
+
+  $lowerName = strtolower($name);
+  $getIndustry = $helpers->select_all_with_params("industries", "LOWER(name) = '$lowerName' $params");
+
+  if (count($getIndustry) == 0) {
+    $comm = null;
+    $message = "";
+
+    if ($action == "insert") {
+      $insertData = array(
+        "name" => ucwords($name)
+      );
+
+      $comm = $helpers->insert("industries", $insertData);
+      $message = "Industry successfully added";
+    } else if ($action == "update") {
+      $updateData = array(
+        "name" => ucwords($name)
+      );
+
+      $comm = $helpers->update("industries", $updateData, "id", $_POST['id']);
+      $message = "Industry successfully updated";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Action not found";
+    }
+
+    if ($comm) {
+      $response["success"] = true;
+      $response["message"] = $message;
+    } else {
+      $response["success"] = true;
+      $response["message"] = $conn->error;
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Industry <strong>$name</strong> already exist.";
+  }
+
+  $helpers->return_response($response);
+}
+
+function verify_company()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $_POST["id"];
+  $verification = $_POST["action"];
+  $message = $_POST["msg"];
+
+  $updateData = array(
+    "status" => $verification,
+    "message" => nl2br($message)
+  );
+
+  $update = $helpers->update("verification", $updateData, "id", $id);
+
+  if ($update) {
+    $response["success"] = true;
+    $response["message"] = "Company verification successfully updated";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function company_save()
+{
+  global $helpers, $_POST, $conn;
+
+  $company_id = $_POST["company_id"];
+  $name = $_POST["name"];
+  $companyAddress = $_POST["companyAddress"];
+  $industry_id = $_POST["industry"];
+  $description = $_POST["description"];
+  $input_business_permit = $_FILES["input_business_permit"];
+  $url_business_permit = $_POST["url_business_permit"];
+
+  $updateData = array();
+  $update = false;
+
+  if (empty($input_business_permit["name"]) && empty($url_business_permit)) {
+
+    $updateData = array(
+      "name" => $name,
+      "address" => $companyAddress,
+      "description" => nl2br($description),
+      "industry_id" => $industry_id
+    );
+
+    $update = $helpers->update("company", $updateData, "id", $company_id);
+  } else {
+    $companyData = $helpers->select_all_individual("company", "id='$company_id'");
+
+    if ($companyData) {
+
+      if (!$companyData->verification_id) {
+        $path = "../uploads/company";
+        $business_permit = $helpers->upload_file($input_business_permit, $path);
+
+        $verificationData = array(
+          "business_permit" => $business_permit->success ?  SERVER_NAME . "/uploads/company/$business_permit->file_name" : $url_business_permit,
+          "status" => "pending",
+          "message" => "Waiting for admin to validate the business permit."
+        );
+
+        $helpers->insert("verification", $verificationData);
+      } else {
+        $path = "../uploads/company";
+        $business_permit = $helpers->upload_file($input_business_permit, $path);
+
+        $updateVerificationData = array(
+          "business_permit" => $business_permit->success ?  SERVER_NAME . "/uploads/company/$business_permit->file_name" : $url_business_permit,
+          "status" => "pending",
+          "message" => "Waiting for admin to validate the business permit."
+        );
+
+        $helpers->update("verification", $updateVerificationData, "id", $companyData->verification_id);
+      }
+
+      $update = true;
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Error updating company details.<br>Please try again later";
+    }
+  }
+
+  if ($update) {
+    $response["success"] = true;
+    $response["message"] = "Company Profile updated successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+
+  $helpers->return_response($response);
+}
+
+function save_company_image()
+{
+  global $helpers, $_FILES, $_POST;
+
+  $action = $_POST["action"];
+  $set_image_null = boolval($_POST["set_image_null"]);
+  $id = $_POST["id"];
+
+  $image_url = "";
+
+  if ($action == "upload") {
+    $file = $helpers->upload_file($_FILES["file"], "../uploads/company");
+
+    if ($file->success) {
+      $file_name = $file->file_name;
+
+      $image_url = SERVER_NAME . "/uploads/company/$file_name";
+
+      $uploadData = array(
+        "company_logo" => $file_name
+      );
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Error uploading image";
+    }
+  } else if ($action == "reset") {
+    $image_url = SERVER_NAME . "/custom-assets/images/office.png";
+
+    $uploadData = array(
+      "company_logo" => $set_image_null ? "set_null" : null,
+    );
+  } else {
+    $image_url = SERVER_NAME . "/custom-assets/images/office.png";
+
+    $response["success"] = false;
+    $response["message"] = "Error updating image";
+  }
+
+  $update = $helpers->update("company", $uploadData, "id", $id);
+
+  if ($update) {
+    $response["success"] = true;
+    $response["image_url"] = $image_url;
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Error updating image";
+  }
+
+  $helpers->return_response($response);
+}
+
+function register_company()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+  $input_company_id = $_POST["company_id"];
+
+  $company_name = $_POST["company_name"];
+  $address = $_POST["address"];
+  $industry = $_POST["industry"];
+  $description = nl2br($_POST["description"]);
+
+  $input_company_logo = $_FILES["input_company_logo"];
+  $url_company_logo = $_POST["url_company_logo"];
+
+  $input_business_permit = $_FILES["input_business_permit"];
+  $url_business_permit = $_POST["url_business_permit"];
+
+  $company_id = null;
+
+  if (!empty($input_company_id)) {
+    $company_id = $input_company_id;
+  } else {
+    $path = "../uploads/company";
+
+    $company_logo = $helpers->upload_file($input_company_logo, $path);
+    $business_permit = $helpers->upload_file($input_business_permit, $path);
+
+    $verificationData = array(
+      "business_permit" => $business_permit->success ? SERVER_NAME . "/uploads/company/$business_permit->file_name" : $url_business_permit,
+      "status" => "pending",
+      "message" => "Waiting for admin to validate the business permit."
+    );
+
+    $verification_id = $helpers->insert("verification", $verificationData);
+
+    if ($verification_id) {
+
+      $companyData = array(
+        "verification_id" => $verification_id,
+        "industry_id" => $industry,
+        "name" => $company_name,
+        "company_logo" => $company_logo->success ? $company_logo->file_name : $url_company_logo,
+        "address" => $address,
+        "description" => $description,
+      );
+
+      $insertCompany = $helpers->insert("company", $companyData);
+
+      if ($insertCompany) {
+        $company_id = $insertCompany;
+      } else {
+        $response["success"] = false;
+        $response["message"] = "Adding Company Error<br>Please try again later";
+
+        $helpers->return_response($response);
+      }
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Verification Error<br>Please try again later";
+
+      $helpers->return_response($response);
+    }
+  }
+
+  $updateData = array(
+    "company_id" => $company_id
+  );
+
+  $updateData = $helpers->update("users", $updateData, "id", $id);
+
+  if ($updateData) {
+    $response["success"] = true;
+    $response["message"] = "Company added successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function get_all_companies()
+{
+  global $helpers, $_GET;
+
+  $params = isset($_GET["s"]) ? "name LIKE '%$_GET[s]%' " : "";
+
+  $companies = $helpers->select_all_with_params("company", "$params ");
+
+  $data = array();
+
+  if (count($companies) > 0) {
+    foreach ($companies as $company) {
+      array_push(
+        $data,
+        array(
+          "address" => $company->address,
+          "company_logo" => $helpers->get_company_logo_link($company->id),
+          "description" => $company->description,
+          "id" => $company->id,
+          "industry_id" => $company->industry_id,
+          "name" => $company->name
+        )
+      );
+    }
+  }
+
+  $helpers->return_response($data);
+}
+
 function check_verification_status()
 {
   global $helpers, $_GET;
 
-  $user_data = $helpers->get_user_by_id($_GET["id"]);
-  $verification_data = $helpers->select_all_with_params("verification", "id=$user_data->verification_id");
+  $verification_data = $helpers->select_all_with_params("verification", "id=$_GET[id]");
 
   $data = null;
   if (count($verification_data) > 0) {
@@ -196,6 +527,23 @@ function delete_data()
   $delete = $helpers->delete($_POST["table"], $_POST["column"], $_POST["val"]);
 
   if ($delete) {
+    $response["success"] = true;
+    $response["message"] = "Item successfully deleted";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function delete_profile()
+{
+  global $helpers, $_POST, $conn;
+
+  $delete = $helpers->delete($_POST["table"], $_POST["column"], $_POST["val"]);
+
+  if ($delete) {
     if ($_POST["table"] == "users") {
       session_unset();
       session_destroy();
@@ -231,7 +579,7 @@ function profile_save()
       "lname" => $lname,
       "address" => $address,
       "contact" => $contact,
-      "email" => $address
+      "email" => $email
     );
 
     $update = $helpers->update("users", $updateData, "id", $id);
@@ -331,7 +679,7 @@ function registration()
       "contact" => $_POST["contact"],
       "email" => $_POST["email"],
       "password" => password_hash($_POST["password"], PASSWORD_ARGON2I),
-      "role" => "applicant"
+      "role" => $_POST['role']
     );
 
     $comm = $helpers->insert("users", $registerData);
@@ -339,7 +687,8 @@ function registration()
     if ($comm) {
       $response["success"] = true;
       $response["message"] = "You are successfully registered!";
-      $response["role"] = "applicant";
+      $response["role"] = $_POST['role'];
+      $response["token"] = $helpers->encrypt($comm);
 
       $_SESSION["id"] = $comm;
     } else {
@@ -365,9 +714,13 @@ function login()
 
   if ($user) {
     if (password_verify($password, $user->password)) {
+      if ($user->role == "employer" && !$user->company_id) {
+        $response["token"] = $helpers->encrypt($user->id);
+      } else {
+        $response["is_password_change"] = $user->is_password_changed == "0" ? false : true;
+      }
       $response["success"] = true;
       $response["role"] = $user->role;
-      $response["is_password_change"] = $user->is_password_changed == "0" ? false : true;
 
       $_SESSION["id"] = $user->id;
     } else {

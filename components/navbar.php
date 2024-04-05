@@ -50,6 +50,18 @@
               <span class="align-middle">My Profile</span>
             </a>
           </li>
+          <?php
+          if ($LOGIN_USER->company_id) :
+            $companyData = $helpers->select_all_individual("company", "id='$LOGIN_USER->company_id'");
+            $verification_id = empty($companyData->verification_id) ? null : $companyData->verification_id;
+          ?>
+            <li>
+              <a class="dropdown-item" href="javascript:void(0)" onclick="handleCheckStatus(`<?= $verification_id ?>`)">
+                <i class="bx bx-check-circle me-2"></i>
+                <span class="align-middle">Check Status</span>
+              </a>
+            </li>
+          <?php endif; ?>
           <li>
             <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">
               <i class="bx bx-power-off me-2"></i>

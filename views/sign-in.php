@@ -104,8 +104,16 @@
                   }
                 });
             }
-          } else {
+          } else if (resp.role == "applicant") {
+
             window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>";
+          } else if (resp.role == "employer") {
+            if (resp.token) {
+              window.location.href = `<?= SERVER_NAME . "/views/company-details?t=" ?>${resp.token}`;
+            } else {
+              window.location.href = "<?= SERVER_NAME . "/views/dashboard" ?>";
+            }
+
           }
         } else {
           swal.fire({

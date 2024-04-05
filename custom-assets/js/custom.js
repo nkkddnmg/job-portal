@@ -46,9 +46,24 @@ window.handleDelete = function (
     });
 };
 
-window.handleOpenModalImg = (el, modalId, modalImgId, captionId) => {
-  $(`#${modalImgId}`).attr("src", el[0].src);
-  $(`#${captionId}`).html(el[0].alt);
+window.handleOpenModalImg = (
+  el,
+  modalId,
+  modalImgId,
+  captionId,
+  src = null
+) => {
+  if (!src) {
+    $(`#${modalImgId}`).attr("src", el[0].src);
+    $(`#${captionId}`).html(el[0].alt);
+  } else {
+    const chunkedSrc = src.split("/");
+    const fileName = chunkedSrc[chunkedSrc.length - 1];
+
+    $(`#${modalImgId}`).attr("src", src);
+    $(`#${captionId}`).html(fileName);
+  }
+
   $("html").css({
     overflow: "hidden",
   });
@@ -65,11 +80,6 @@ window.handleCloseModalImg = (modalId, modalImgId, captionId) => {
   });
 };
 
-window.handleInputClick = () => {
-  document.body.onfocus = checkIt;
-  console.log("initializing");
-};
-
 function checkIt() {
   const file = document.getElementById("img_upload");
 
@@ -80,6 +90,11 @@ function checkIt() {
   }
   document.body.onfocus = null;
 }
+
+window.handleInputClick = () => {
+  document.body.onfocus = checkIt;
+  console.log("initializing");
+};
 
 window.handleChangeImage = (e, imageId, backendUrl, action, user_id) => {
   let formData = new FormData();

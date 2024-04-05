@@ -75,7 +75,12 @@ $pageName = "Add Admin";
                         </div>
                         <div class="form-group mb-3 col-md-6">
                           <label for="address" class="form-label">Address</label>
-                          <input type="text" class="form-control" id="address" name="address" required />
+                          <select class="form-select" name="address" id="address" required>
+                            <option value="">-- select address --</option>
+                            <?php foreach ($helpers->addressList as $add) : ?>
+                              <option value="<?= $add ?>"><?= $add ?></option>
+                            <?php endforeach; ?>
+                          </select>
                         </div>
                         <div class="mt-2">
                           <button type="submit" class="btn btn-primary me-2">Save changes</button>

@@ -20,7 +20,7 @@
               <p class="mb-4">Create your account!</p>
             </div>
 
-            <form id="form-sign-up" class="mb-3" method="POST">
+            <form id="form-sign-up" class="mb-3" method="POST" enctype="multipart/form-data" novalidate>
 
               <div class="mb-3 form-group">
                 <label for="fname" class="form-label">First name</label>
@@ -36,7 +36,13 @@
               </div>
               <div class="mb-3 form-group">
                 <label for="address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="address" name="address" placeholder="Enter your Address" required />
+
+                <select class="form-select" name="address" id="address" required>
+                  <option value="">-- select address --</option>
+                  <?php foreach ($helpers->addressList as $add) : ?>
+                    <option value="<?= $add ?>"><?= $add ?></option>
+                  <?php endforeach; ?>
+                </select>
               </div>
               <div class="mb-3 form-group">
                 <label for="contact" class="form-label">Contact</label>
@@ -55,12 +61,22 @@
                 </div>
               </div>
 
+              <input type="text" name="role" id="inputRole" hidden>
               <div class="row">
                 <div class="col-md-6 mt-2">
-                  <button class="btn btn-primary d-grid w-100" type="submit">Sign up</button>
+                  <button class="btn btn-primary d-grid w-100" type="button" onclick="handleSubmit('applicant')">
+                    Applicant
+                  </button>
                 </div>
                 <div class="col-md-6 mt-2">
-                  <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">Cancel</button>
+                  <button class="btn btn-outline-primary d-grid w-100" type="button" onclick="handleSubmit('employer')">
+                    Employer
+                  </button>
+                </div>
+                <div class="col-md-12 mt-2">
+                  <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">
+                    Cancel
+                  </button>
                 </div>
               </div>
             </form>
@@ -80,45 +96,77 @@
 
 </body>
 <?php include("../components/footer.php") ?>
+
 <script>
   const handleGoBackToPublicPage = () => {
     window.location.href = '<?= SERVER_NAME . "/public/views/home" ?>'
   }
 
+  function handleSubmit(role) {
+    $("#inputRole").val(role)
+
+    $("#form-sign-up").submit();
+  }
+
+  $("#form-sign-up").validate({
+    submitHandler: function() {
+      swal.showLoading()
+      $.ajax({
+        url: "<?= SERVER_NAME . "/backend/nodes?action=register" ?>",
+        type: "POST",
+        data: new FormData($("#form-sign-up").get(0)),
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function(data) {
+          const resp = $.parseJSON(data)
+          swal.fire({
+            title: resp.success ? "Success" : "Error",
+            html: resp.message,
+            icon: resp.success ? "success" : "error",
+          }).then(() => {
+            if (resp.success) {
+              let location = "<?= SERVER_NAME . "/views/admin/dashboard" ?>";
+
+              if (resp.role == "employer") {
+                location = `<?= SERVER_NAME . "/views/company-details?t=" ?>${resp.token}`;
+              } else if (resp.role == "applicant") {
+                location = `<?= SERVER_NAME . "/views/create-resume?t=" ?>${resp.token}`;
+              }
+
+              window.location.href = location
+            }
+          })
+        },
+        error: function(data) {
+          swal.fire({
+            title: 'Oops...',
+            text: 'Something went wrong.',
+            icon: 'error',
+          })
+        }
+      });
+    },
+    errorElement: "span",
+    errorPlacement: function(error, element) {
+      error.addClass("invalid-feedback").insertAfter(element.closest(".form-group").children().get(0))
+    },
+    rules: {
+      pdfFile: {
+        pdfFileOnly: true
+      }
+    },
+    highlight: function(element) {
+      $(element).removeClass('is-valid').addClass('is-invalid');
+    },
+    unhighlight: function(element) {
+      $(element).removeClass('is-invalid');
+    }
+  });
+
   $("#form-sign-up").on("submit", function(e) {
     e.preventDefault()
-    swal.showLoading()
-    $.ajax({
-      url: "<?= SERVER_NAME . "/backend/nodes?action=register" ?>",
-      type: "POST",
-      data: new FormData(this),
-      contentType: false,
-      cache: false,
-      processData: false,
-      success: function(data) {
-        const resp = $.parseJSON(data)
-        swal.fire({
-          title: resp.success ? "Success" : "Error",
-          html: resp.message,
-          icon: resp.success ? "success" : "error",
-        }).then(() => {
-          if (resp.success) {
-            if (resp.role == "admin") {
-              window.location.href = "./admin";
-            } else {
-              window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>";
-            }
-          }
-        })
-      },
-      error: function(data) {
-        swal.fire({
-          title: 'Oops...',
-          text: 'Something went wrong.',
-          icon: 'error',
-        })
-      }
-    });
+
 
   })
 </script>

@@ -54,16 +54,18 @@ $pageName = "Employer Lists";
                   <tbody>
                     <?php
                     $employers = $helpers->select_all_with_params("users", "role='employer'");
-                    $modal_id = "employer-img-modal";
-                    $img_id = "employer-image";
-                    $caption_id = "employer-caption";
+
                     if (count($employers) > 0) :
                       foreach ($employers as $employer) :
+
+                        $modal_id = "employer-img-modal_$employer->id";
+                        $img_id = "employer-image_$employer->id";
+                        $caption_id = "employer-caption_$employer->id";
 
                     ?>
                         <tr>
                           <td class="td-image">
-                            <?= $helpers->generate_td_avatar($helpers->get_avatar_link($employer->id), $modal_id, $img_id, $caption_id) ?>
+                            <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($employer->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
                           <td><?= $employer->fname ?></td>
                           <td><?= empty($employer->mname) ? "<em class='text-muted'>N/A</em>" : $employer->mname ?></td>
@@ -73,7 +75,7 @@ $pageName = "Employer Lists";
                           <td><?= date("m-d-Y", strtotime($employer->date_created)) ?></td>
                           <td>
                             <?php if ($employer->id != $LOGIN_USER->id) : ?>
-                              <button type="button" class="btn btn-primary" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$employer->id" ?>`'>
+                              <button type="button" class="btn btn-primary btn-sm" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$employer->id" ?>`'>
                                 View Profile
                               </button>
                             <?php else : ?>
@@ -82,6 +84,7 @@ $pageName = "Employer Lists";
                           </td>
                         </tr>
 
+                        <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
                       <?php endforeach; ?>
                     <?php endif;
                     ?>
@@ -99,7 +102,6 @@ $pageName = "Employer Lists";
     </div>
     <!-- / Layout page -->
   </div>
-  <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
 
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>

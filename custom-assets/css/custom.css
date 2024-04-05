@@ -1,5 +1,13 @@
+img {
+  object-fit: cover;
+}
+
 .dtb-popover-close {
   display: none !important;
+}
+
+.td-image {
+  text-align: center !important;
 }
 
 .td-image .avatar {
@@ -89,4 +97,38 @@
 
 .swal2-container {
   z-index: 1101;
+}
+
+.autocomplete-suggestions {
+  text-align: left;
+  border: 1px solid #999;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  background: #fff;
+  overflow: auto;
+}
+.autocomplete-suggestion {
+  padding: 5px 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+.autocomplete-selected {
+  background: #f0f0f0;
+}
+.autocomplete-suggestions strong {
+  font-weight: normal;
+  color: #3399ff;
+}
+.autocomplete-group {
+  padding: 2px 5px;
+}
+.autocomplete-group strong {
+  display: block;
+  border-bottom: 1px solid #000;
+}
+
+.autocomplete-img {
+  width: 40px;
+  height: 40px;
 }

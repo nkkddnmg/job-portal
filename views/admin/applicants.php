@@ -53,11 +53,13 @@ $pageName = "Applicant Lists";
                   <tbody>
                     <?php
                     $applicants = $helpers->select_all_with_params("users", "role='applicant'");
-                    $modal_id = "applicant-img-modal";
-                    $img_id = "applicant-image";
-                    $caption_id = "applicant-caption";
+
                     if (count($applicants) > 0) :
                       foreach ($applicants as $applicant) :
+                        $modal_id = "applicant-img-modal_$applicant->id";
+                        $img_id = "applicant-image_$applicant->id";
+                        $caption_id = "applicant-caption_$applicant->id";
+
                         $get_verification_data = $helpers->select_all_with_params("verification", "id=$applicant->verification_id");
 
                         $verification = "";
@@ -75,7 +77,7 @@ $pageName = "Applicant Lists";
                     ?>
                         <tr>
                           <td class="td-image">
-                            <?= $helpers->generate_td_avatar($helpers->get_avatar_link($applicant->id), $modal_id, $img_id, $caption_id) ?>
+                            <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($applicant->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
                           <td><?= $helpers->get_full_name($applicant->id, "with_middle") ?></td>
                           <td><?= $applicant->address ?></td>
@@ -86,7 +88,7 @@ $pageName = "Applicant Lists";
                           <td><?= date("m-d-Y", strtotime($applicant->date_created)) ?></td>
                           <td>
                             <?php if ($applicant->id != $LOGIN_USER->id) : ?>
-                              <button type="button" class="btn btn-primary" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$applicant->id" ?>`'>
+                              <button type="button" class="btn btn-primary btn-sm" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$applicant->id" ?>`'>
                                 View Profile
                               </button>
                             <?php else : ?>
@@ -94,7 +96,7 @@ $pageName = "Applicant Lists";
                             <?php endif; ?>
                           </td>
                         </tr>
-
+                        <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
                       <?php endforeach; ?>
                     <?php endif;
                     ?>
@@ -112,7 +114,6 @@ $pageName = "Applicant Lists";
     </div>
     <!-- / Layout page -->
   </div>
-  <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
 
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>

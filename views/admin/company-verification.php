@@ -6,7 +6,7 @@ if (!isset($_SESSION["id"])) {
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
-$pageName = "Admin Lists";
+$pageName = "Company Verification";
 ?>
 <!DOCTYPE html>
 
@@ -34,58 +34,59 @@ $pageName = "Admin Lists";
                   <span class="text-muted fw-light"><?= $pageName ?></span>
                 </h4>
               </div>
-              <div class="col-6 py-2">
-                <button type="button" class="btn btn-primary float-end" onclick='return window.location.href=`<?= SERVER_NAME . "/views/admin/add-admin" ?>`'>
-                  <i class='tf-icons bx bx-plus'></i> Add New
-                </button>
-              </div>
             </div>
 
             <div class="card">
               <div class="card-body">
-                <table id="admin-table" class="table table-striped nowrap">
+                <table id="company-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
-                      <th>Avatar</th>
-                      <th>First name</th>
-                      <th>Middle name</th>
-                      <th>Last name</th>
+                      <th>Company Logo</th>
+                      <th>Name</th>
+                      <th>Industry</th>
                       <th>Address</th>
-                      <th>Email</th>
+                      <th>Verification</th>
                       <th>Date Created</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     <?php
-                    $admins = $helpers->select_all_with_params("users", "role='admin'");
-                    $modal_id = "admin-img-modal";
-                    $img_id = "admin-image";
-                    $caption_id = "admin-caption";
-                    if (count($admins) > 0) :
-                      foreach ($admins as $admin) :
+                    $companies = $helpers->select_all("company");
+
+                    if (count($companies) > 0) :
+                      foreach ($companies as $company) :
+                        $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id'");
+
+                        if ($verificationData->status != "pending") continue;
+
+                        $modal_id = "company-img-modal_$company->id";
+                        $img_id = "company-image_$company->id";
+                        $caption_id = "company-caption_$company->id";
+
+                        $NA = "<em class='text-muted'>N/A</em>";
+                        $industryData = $helpers->select_all_individual("industries", "id='$company->industry_id'");
+
                     ?>
                         <tr>
-                          <td class="td-image">
-                            <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($admin->id), $modal_id, $img_id, $caption_id) ?>
+                          <td class="td-image text-center">
+                            <?= $helpers->generate_modal_click_avatar($helpers->get_company_logo_link($company->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
-                          <td><?= $admin->fname ?></td>
-                          <td><?= empty($admin->mname) ? "<em class='text-muted'>N/A</em>" : $admin->mname ?></td>
-                          <td><?= $admin->lname ?></td>
-                          <td><?= $admin->address ?></td>
-                          <td><?= $admin->email ?></td>
-                          <td><?= date("m-d-Y", strtotime($admin->date_created)) ?></td>
+                          <td><?= $company->name ?></td>
+                          <td><?= $industryData ? $industryData->name : $NA ?></td>
+                          <td><?= $company->address ?></td>
                           <td>
-                            <?php if ($admin->id != $LOGIN_USER->id) : ?>
-                              <button type="button" class="btn btn-primary" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$admin->id" ?>`'>
-                                View Profile
-                              </button>
-                            <?php else : ?>
-                              ---
-                            <?php endif; ?>
+                            <span class="badge bg-label-warning me-1">Pending</span>
+                          </td>
+                          <td><?= date("m-d-Y", strtotime($company->date_created)) ?></td>
+                          <td>
+                            <button type="button" class="btn btn-primary btn-sm" onclick='return window.location.href =`<?= SERVER_NAME . "/views/admin/company-profile?id=$company->id&&verify" ?>`'>
+                              View
+                            </button>
                           </td>
                         </tr>
 
+                        <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
                       <?php endforeach; ?>
                     <?php endif;
                     ?>
@@ -103,7 +104,7 @@ $pageName = "Admin Lists";
     </div>
     <!-- / Layout page -->
   </div>
-  <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
+
 
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>
@@ -113,8 +114,8 @@ $pageName = "Admin Lists";
 <?php include("../../components/footer.php") ?>
 
 <script>
-  const adminTableCols = [1, 2, 3, 4, 5, 6];
-  const adminTable = $("#admin-table").DataTable({
+  const companyTableCols = [1, 2, 3, 4, 5];
+  const companyTable = $("#company-table").DataTable({
     paging: true,
     lengthChange: true,
     ordering: false,
@@ -130,7 +131,7 @@ $pageName = "Admin Lists";
         extend: 'print',
         title: '',
         exportOptions: {
-          columns: adminTableCols
+          columns: companyTableCols
         },
         customize: function(win) {
           $(win.document.body)
@@ -145,12 +146,12 @@ $pageName = "Admin Lists";
       {
         extend: 'colvis',
         text: "Columns",
-        columns: adminTableCols
+        columns: companyTableCols
       },
       {
         extend: 'searchBuilder',
         config: {
-          columns: adminTableCols
+          columns: companyTableCols
         }
       }
     ],

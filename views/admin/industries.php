@@ -2,11 +2,11 @@
 <?php include("../../components/function_components.php"); ?>
 <?php
 if (!isset($_SESSION["id"])) {
-  header("location: ../sign-in");
+  header("location: ../");
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
-$pageName = "Admin Lists";
+$pageName = "Industry Lists";
 ?>
 <!DOCTYPE html>
 
@@ -35,7 +35,7 @@ $pageName = "Admin Lists";
                 </h4>
               </div>
               <div class="col-6 py-2">
-                <button type="button" class="btn btn-primary float-end" onclick='return window.location.href=`<?= SERVER_NAME . "/views/admin/add-admin" ?>`'>
+                <button type="button" class="btn btn-primary float-end" id="btnAdd">
                   <i class='tf-icons bx bx-plus'></i> Add New
                 </button>
               </div>
@@ -43,46 +43,31 @@ $pageName = "Admin Lists";
 
             <div class="card">
               <div class="card-body">
-                <table id="admin-table" class="table table-striped nowrap">
+                <table id="industry-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
-                      <th>Avatar</th>
-                      <th>First name</th>
-                      <th>Middle name</th>
-                      <th>Last name</th>
-                      <th>Address</th>
-                      <th>Email</th>
+                      <th>Name</th>
                       <th>Date Created</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     <?php
-                    $admins = $helpers->select_all_with_params("users", "role='admin'");
-                    $modal_id = "admin-img-modal";
-                    $img_id = "admin-image";
-                    $caption_id = "admin-caption";
-                    if (count($admins) > 0) :
-                      foreach ($admins as $admin) :
+                    $industries = $helpers->select_all("industries");
+
+                    if (count($industries) > 0) :
+                      foreach ($industries as $industry) :
                     ?>
                         <tr>
-                          <td class="td-image">
-                            <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($admin->id), $modal_id, $img_id, $caption_id) ?>
-                          </td>
-                          <td><?= $admin->fname ?></td>
-                          <td><?= empty($admin->mname) ? "<em class='text-muted'>N/A</em>" : $admin->mname ?></td>
-                          <td><?= $admin->lname ?></td>
-                          <td><?= $admin->address ?></td>
-                          <td><?= $admin->email ?></td>
-                          <td><?= date("m-d-Y", strtotime($admin->date_created)) ?></td>
+                          <td><?= $industry->name ?></td>
+                          <td><?= date("Y-m-d h:i A", strtotime($industry->date_created)) ?></td>
                           <td>
-                            <?php if ($admin->id != $LOGIN_USER->id) : ?>
-                              <button type="button" class="btn btn-primary" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$admin->id" ?>`'>
-                                View Profile
-                              </button>
-                            <?php else : ?>
-                              ---
-                            <?php endif; ?>
+                            <button type="button" class="btn btn-warning btn-sm m-2" onclick="handleEditIndustry('<?= $industry->id ?>', '<?= $industry->name ?>')">
+                              Edit
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm m-2" onclick="handleIndustryDelete('<?= $industry->id ?>')">
+                              Delete
+                            </button>
                           </td>
                         </tr>
 
@@ -103,7 +88,6 @@ $pageName = "Admin Lists";
     </div>
     <!-- / Layout page -->
   </div>
-  <?= $helpers->generate_modal_img($modal_id, $img_id, $caption_id) ?>
 
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>
@@ -113,8 +97,86 @@ $pageName = "Admin Lists";
 <?php include("../../components/footer.php") ?>
 
 <script>
-  const adminTableCols = [1, 2, 3, 4, 5, 6];
-  const adminTable = $("#admin-table").DataTable({
+  const handleIndustryDelete = (id) => {
+    const postData = {
+      table: "industries",
+      column: "id",
+      val: id,
+    }
+    swal.showLoading();
+    handleDelete("<?= SERVER_NAME . "/backend/nodes?action=delete_data" ?>", undefined, postData);
+  }
+
+  const handleEditIndustry = (id, name) => {
+    swal.fire({
+      input: "text",
+      inputLabel: "Industry name",
+      inputValue: name,
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) {
+          return "Input industry name";
+        }
+      }
+    }).then((res) => {
+      if (res.isConfirmed) {
+        save({
+          id: id,
+          action: "update",
+          name: res.value
+        })
+      }
+    })
+  }
+
+  $("#btnAdd").on("click", function() {
+    swal.fire({
+      input: "text",
+      inputLabel: "Industry name",
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) {
+          return "Input industry name";
+        }
+      }
+    }).then((res) => {
+      if (res.isConfirmed) {
+        save({
+          action: "insert",
+          name: res.value
+        })
+      }
+    })
+  })
+
+  function save(formData) {
+    swal.showLoading()
+    $.ajax({
+      url: "<?= SERVER_NAME . "/backend/nodes?action=save_industry" ?>",
+      type: "POST",
+      data: formData,
+      cache: true,
+      processData: true,
+      success: function(data) {
+        const resp = $.parseJSON(data)
+        swal.fire({
+          title: resp.success ? "Success" : "Error",
+          html: resp.message,
+          icon: resp.success ? "success" : "error",
+        }).then(() => window.location.reload())
+      },
+      error: function(data) {
+        swal.fire({
+          title: 'Oops...',
+          text: 'Something went wrong.',
+          icon: 'error',
+        })
+      }
+    });
+  }
+
+  const industryTableCols = [1, 2];
+  const industryTable = $("#industry-table").DataTable({
     paging: true,
     lengthChange: true,
     ordering: false,
@@ -130,7 +192,7 @@ $pageName = "Admin Lists";
         extend: 'print',
         title: '',
         exportOptions: {
-          columns: adminTableCols
+          columns: industryTableCols
         },
         customize: function(win) {
           $(win.document.body)
@@ -145,12 +207,12 @@ $pageName = "Admin Lists";
       {
         extend: 'colvis',
         text: "Columns",
-        columns: adminTableCols
+        columns: industryTableCols
       },
       {
         extend: 'searchBuilder',
         config: {
-          columns: adminTableCols
+          columns: industryTableCols
         }
       }
     ],

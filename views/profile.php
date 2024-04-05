@@ -17,19 +17,27 @@ $contact = "";
 $email = "";
 $address = "";
 
+$userData = null;
+
 if (isset($_GET["id"])) {
-  $user = $helpers->get_user_by_id($_GET["id"]);
+  $userData = $helpers->get_user_by_id($_GET["id"]);
 
-  $user_id = $user->id;
-  $imgSrc = $helpers->get_avatar_link($user->id);
-  $fname = $user->fname;
-  $mname = $user->mname;
-  $lname = $user->lname;
-  $contact = $user->contact;
-  $email = $user->email;
-  $address = $user->address;
+  $user_id = $userData->id;
+  $imgSrc = $helpers->get_avatar_link($userData->id);
+  $fname = $userData->fname;
+  $mname = $userData->mname;
+  $lname = $userData->lname;
+  $contact = $userData->contact;
+  $email = $userData->email;
+  $address = $userData->address;
 
-  $pageName = "Admin Profile";
+  if ($userData->role == "employer") {
+    $pageName = "Employer Profile";
+  } else if ($userData->role == "applicant") {
+    $pageName = "Applicant Profile";
+  } else {
+    $pageName = "Admin Profile";
+  }
 } else {
   $user_id = $LOGIN_USER->id;
   $imgSrc = $helpers->get_avatar_link($LOGIN_USER->id);
@@ -111,7 +119,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                       <h5 class="card-header">Profile Details</h5>
 
                       <!-- Account -->
-                      <?= $helpers->generate_profile_avatar($buttonVisibility, $user_avatar_link, $user_id); ?>
+                      <?= $helpers->generate_avatar($buttonVisibility, $user_avatar_link, $user_id, false); ?>
 
                       <div class="card-body">
                         <form id="form-update-profile" method="POST">
@@ -139,7 +147,13 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                             </div>
                             <div class="form-group mb-3 col-md-6">
                               <label for="address" class="form-label">Address</label>
-                              <input type="text" class="form-control" id="address" name="address" value="<?= $address ?>" required />
+
+                              <select class="form-select" name="address" id="address" required>
+                                <option value="">-- select address --</option>
+                                <?php foreach ($helpers->addressList as $add) : ?>
+                                  <option value="<?= $add ?>" <?= $helpers->is_selected($add, $address) ?>><?= $add ?></option>
+                                <?php endforeach; ?>
+                              </select>
                             </div>
                             <?php if (!isset($_GET["id"])) : ?>
                               <div class="mt-2">
@@ -152,27 +166,151 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                       </div>
                       <!-- /Account -->
                     </div>
-                    <?php if (!isset($_GET["id"])) : ?>
+                    <?php
+                    if ($LOGIN_USER->role == "employer") :
+                      $companyImgLink = "";
+                      $companyID = "";
+                      $companyName = "";
+                      $companyAddress = "";
+                      $industry = "";
+                      $description = "";
+
+                      $verification_id = "";
+                      if ($LOGIN_USER->company_id) {
+                        $getCompanyData = $helpers->select_all_individual("company", "id='$LOGIN_USER->company_id'");
+
+                        if ($getCompanyData) {
+                          $companyImgLink = $helpers->get_company_logo_link($getCompanyData->id);
+                          $companyID = $getCompanyData->id;
+
+                          $companyName = $getCompanyData->name;
+                          $companyAddress = $getCompanyData->address;
+                          $industryID = $getCompanyData->industry_id;
+                          $description = nl2br($getCompanyData->description);
+
+                          $verification_id = $getCompanyData->verification_id;
+                        }
+                      }
+
+                    ?>
                       <div class="card">
-                        <h5 class="card-header">Delete Account</h5>
+                        <h5 class="card-header">Company Details</h5>
+
+                        <?= $helpers->generate_company_logo($buttonVisibility, $companyImgLink, $companyID); ?>
+
                         <div class="card-body">
-                          <div class="mb-3 col-12 mb-0">
-                            <div class="alert alert-warning">
-                              <h6 class="alert-heading fw-bold mb-1">Are you sure you want to delete your account?</h6>
-                              <p class="mb-0">Once you delete your account, there is no going back. Please be certain.</p>
+                          <?php
+                          $verificationData = $helpers->select_custom_fields_individual("verification", array("status", "message", "business_permit"), "id='$verification_id'");
+
+                          if ($verificationData->status == "pending") :
+                          ?>
+                            <div class="alert alert-warning mt-2">
+                              <?= $verificationData->message ?>
                             </div>
-                          </div>
-                          <form id="form-deactivate" method="POST">
-                            <input type="text" name="id" value="<?= $user_id ?>" readonly hidden>
-                            <div class="form-check mb-3">
-                              <input class="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" />
-                              <label class="form-check-label" for="accountActivation">I confirm my account deactivation</label>
+                          <?php elseif ($verificationData->status == "denied") : ?>
+                            <div class="alert alert-danger mt-2">
+                              <?= $verificationData->message ?>
                             </div>
-                            <button type="submit" class="btn btn-danger deactivate-account disabled" id="btnDeactivate">Deactivate Account</button>
+                          <?php elseif ($verificationData->status == "approved") : ?>
+                            <div class="alert alert-success mt-2">
+                              <?= $verificationData->message ?>
+                            </div>
+                          <?php endif; ?>
+
+                          <form id="form-update-company" method="POST" enctype="multipart/form-data">
+                            <input type="text" name="company_id" value="<?= $companyID ?>" readonly hidden>
+                            <div class="row">
+                              <div class="form-group mb-3 col-md-4">
+                                <label for="name" class="form-label">Name</label>
+                                <input class="form-control" type="text" id="name" name="name" value="<?= $companyName ?>" required />
+                              </div>
+                              <div class="form-group mb-3 col-md-4">
+                                <label for="companyAddress" class="form-label">Address</label>
+
+                                <select class="form-select" name="companyAddress" id="companyAddress" required>
+                                  <option value="">-- select address --</option>
+                                  <?php foreach ($helpers->addressList as $add) : ?>
+                                    <option value="<?= $add ?>" <?= $helpers->is_selected($add, $companyAddress) ?>><?= $add ?></option>
+                                  <?php endforeach; ?>
+                                </select>
+                              </div>
+                              <div class="form-group mb-3 col-md-4">
+                                <label for="industry" class="form-label">Industry</label>
+                                <select class="form-select" name="industry" id="industry" required>
+                                  <option value="" selected disabled>Select an option</option>
+                                  <?php
+                                  $industries = $helpers->select_all("industries");
+
+                                  foreach ($industries as $industry) :
+                                  ?>
+                                    <option value="<?= $industry->id ?>" <?= $helpers->is_selected($industry->id, $industryID) ?>><?= $industry->name ?></option>
+                                  <?php
+                                  endforeach;
+                                  ?>
+                                </select>
+                              </div>
+                              <div class="form-group mb-3 col-md-12">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"><?= $description ?></textarea>
+                              </div>
+
+                              <div class="form-group mb-3 col-md-12">
+
+                                <div id="inputLink">
+                                  <label for="inputBusinessPermit" class="form-label">Business Permit</label>
+                                  <div class="input-group ">
+                                    <input type="text" class="form-control text-primary" id="inputBusinessPermit" value="<?= $verificationData->business_permit ?>" required readonly>
+
+                                    <button class="btn btn-outline-warning" id="btnChangeBusinessPermit" type="button">
+                                      Change
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick='handleOpenModalImg(undefined, `divModalBusinessPermit`, `businessPermitImg`, `businessPermitCaption`, `<?= $verificationData->business_permit ?>`)' type="button">
+                                      Preview
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="mb-3 col-md-12 d-none" id="editBusinessPermit">
+                                <?= $helpers->generate_image_upload(
+                                  "divBusinessPermit",
+                                  "<label class='form-label'>Business Permit  <span class='text-danger'>*</span></label> ",
+                                  "input_business_permit",
+                                  "url_business_permit",
+                                  array(
+                                    "show" => true,
+                                    "onclick" => "handleHide()"
+                                  )
+                                ) ?>
+                              </div>
+                              <div class="mt-2">
+                                <button type="submit" class="btn btn-primary me-2">Update Details</button>
+                                <button type="button" class="btn btn-outline-danger" onclick="return window.history.back()">Cancel</button>
+                              </div>
+                            </div>
                           </form>
                         </div>
                       </div>
                     <?php endif; ?>
+                    <!-- <div class="card">
+                      <h5 class="card-header">Delete Account</h5>
+                      <div class="card-body">
+                        <div class="mb-3 col-12 mb-0">
+                          <div class="alert alert-warning">
+                            <h6 class="alert-heading fw-bold mb-1">Are you sure you want to delete your account?</h6>
+                            <p class="mb-0">Once you delete your account, there is no going back. Please be certain.</p>
+                          </div>
+                        </div>
+                        <form id="form-deactivate" method="POST">
+                          <input type="text" name="id" value="<?= $user_id ?>" readonly hidden>
+                          <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" />
+                            <label class="form-check-label" for="accountActivation">I confirm my account deactivation</label>
+                          </div>
+                          <button type="submit" class="btn btn-danger deactivate-account disabled" id="btnDeactivate">Deactivate Account</button>
+                        </form>
+                      </div>
+                    </div> -->
                   </div>
                   <div class="tab-pane fade" id="tab-change-password" role="tabpanel">
                     <div class="row justify-content-center">
@@ -229,6 +367,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
       </div>
       <!-- / Layout page -->
     </div>
+    <?= $helpers->generate_modal_img("divModalBusinessPermit", "businessPermitImg", "businessPermitCaption") ?>
 
     <!-- Overlay -->
     <div class="layout-overlay layout-menu-toggle"></div>
@@ -238,9 +377,61 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
 </body>
 <?php include("../components/footer.php") ?>
 <script>
+  $("#divBusinessPermit").imageupload()
+
+  $("#btnChangeBusinessPermit").on("click", function() {
+    $("#inputLink").addClass("d-none")
+    $("#editBusinessPermit").removeClass("d-none")
+  })
+
+  function handleHide() {
+    $("#inputLink").removeClass("d-none")
+    $("#editBusinessPermit").addClass("d-none")
+    $("#input_business_permit").val("")
+    $("#url_business_permit").val("")
+
+    $("#divBusinessPermit img").remove()
+  }
+
+  const handleCompanyChangeImage = (e, imageId, backendUrl, action, user_id) => {
+    let formData = new FormData();
+    formData.append("id", user_id);
+
+    if (action == "upload") {
+      formData.append("file", $(e).get(0).files[0]);
+      formData.append("set_image_null", false);
+      formData.append("action", action);
+    } else if ("reset") {
+      formData.append("set_image_null", true);
+      formData.append("action", action);
+    }
+
+    $.ajax({
+      url: `${backendUrl}?action=save_company_image`,
+      type: "POST",
+      data: formData,
+      contentType: false,
+      cache: false,
+      processData: false,
+      success: function(data) {
+        const resp = $.parseJSON(data);
+        if (resp.success) {
+          $(`#${imageId}`).attr("src", resp.image_url);
+        }
+      },
+      error: function(data) {
+        swal.fire({
+          title: "Oops...",
+          html: "Something went wrong.",
+          icon: "error",
+        });
+      },
+    });
+  };
+
   $("#form-change-password").on("submit", function(e) {
     e.preventDefault();
-    
+
     const current_password = $("#current_password").val();
     const new_password = $("#new_password").val();
     const confirm_password = $("#confirm_password").val();
@@ -293,6 +484,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
       });
     }
   })
+
   $("#accountActivation").on("change", function(e) {
     if ($(this).is(":checked")) {
       $("#btnDeactivate").removeClass("disabled")
@@ -326,7 +518,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
         val: "<?= $user_id ?>",
       }
 
-      handleDelete("<?= SERVER_NAME . "/backend/nodes?action=delete_data" ?>", confirmOptions, postData);
+      handleDelete("<?= SERVER_NAME . "/backend/nodes?action=delete_profile" ?>", confirmOptions, postData);
     } else {
       swal.fire({
         title: "Error",
@@ -364,6 +556,50 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
         });
       },
     });
+  })
+
+  $("#form-update-company").on("submit", function(e) {
+    e.preventDefault()
+    swal.showLoading()
+    console.log(!$("#editBusinessPermit").hasClass("d-none"))
+    const input_business_permit = $("input[name='input_business_permit']").val()
+    const url_business_permit = $("input[name='url_business_permit']").val()
+
+    if (!$("#editBusinessPermit").hasClass("d-none")) {
+      if (!input_business_permit && !url_business_permit) {
+        swal.fire({
+          title: "Error",
+          html: "Business Permit is required",
+          icon: "error"
+        })
+        return;
+      }
+    }
+
+    $.ajax({
+      url: "<?= SERVER_NAME . "/backend/nodes?action=company_save" ?>",
+      type: "POST",
+      data: new FormData(this),
+      contentType: false,
+      cache: false,
+      processData: false,
+      success: function(data) {
+        const resp = $.parseJSON(data);
+        swal.fire({
+          title: resp.success ? "" : "",
+          html: resp.message,
+          icon: resp.success ? "success" : "error"
+        }).then((e) => resp.success ? window.location.reload() : undefined)
+      },
+      error: function(data) {
+        swal.fire({
+          title: "Oops...",
+          html: "Something went wrong.",
+          icon: "error",
+        });
+      },
+    });
+
   })
 </script>
 

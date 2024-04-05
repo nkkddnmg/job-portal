@@ -64,11 +64,6 @@
             <li class="d-lg-none">
               <a class="dropdown-item" href="#">My Jobs</a>
             </li>
-            <?php if ($LOGIN_USER->verification_id) : ?>
-              <li class="d-lg-none">
-                <a class="dropdown-item" href="javascript:void(0)" onclick="handleCheckStatus(`<?= $LOGIN_USER->id ?>`)">Check Status</a>
-              </li>
-            <?php endif; ?>
             <li class="d-lg-none">
               <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
             </li>
@@ -93,9 +88,6 @@
               </h4>
               <a class="dropdown-item" href="#">My Profile</a>
               <a class="dropdown-item" href="#">My Jobs</a>
-              <?php if ($LOGIN_USER->verification_id) : ?>
-                <a class="dropdown-item" href="javascript:void(0)" onclick="handleCheckStatus(`<?= $LOGIN_USER->id ?>`)">Check Status</a>
-              <?php endif; ?>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
             </div>
