@@ -58,7 +58,7 @@ $pageName = "Company Verification";
                       foreach ($companies as $company) :
                         $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id'");
 
-                        if ($verificationData->status != "pending") continue;
+                        if ($verificationData && $verificationData->status != "pending") continue;
 
                         $modal_id = "company-img-modal_$company->id";
                         $img_id = "company-image_$company->id";

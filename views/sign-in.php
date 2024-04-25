@@ -84,7 +84,7 @@
         if (resp.success) {
           if (resp.role == "admin") {
             if (resp.is_password_change) {
-              window.location.href = "<?= SERVER_NAME . "/views/admin/dashboard" ?>";
+              window.location.href = "<?= SERVER_NAME . "/views/profile" ?>";
             } else {
               swal.fire({
                   title: "Successfully Login",
@@ -105,13 +105,16 @@
                 });
             }
           } else if (resp.role == "applicant") {
-
-            window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>";
+            if (sessionStorage.getItem("referer")) {
+              window.location.href = decodeURIComponent(sessionStorage.getItem("referer"))
+            } else {
+              window.location.href = `${resp.location}`;
+            }
           } else if (resp.role == "employer") {
             if (resp.token) {
               window.location.href = `<?= SERVER_NAME . "/views/company-details?t=" ?>${resp.token}`;
             } else {
-              window.location.href = "<?= SERVER_NAME . "/views/dashboard" ?>";
+              window.location.href = "<?= SERVER_NAME . "/views/profile" ?>";
             }
 
           }

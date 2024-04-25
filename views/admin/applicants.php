@@ -45,7 +45,6 @@ $pageName = "Applicant Lists";
                       <th>Full name</th>
                       <th>Address</th>
                       <th>Email</th>
-                      <th>Is Verified</th>
                       <th>Date Created</th>
                       <th>Actions</th>
                     </tr>
@@ -59,21 +58,6 @@ $pageName = "Applicant Lists";
                         $modal_id = "applicant-img-modal_$applicant->id";
                         $img_id = "applicant-image_$applicant->id";
                         $caption_id = "applicant-caption_$applicant->id";
-
-                        $get_verification_data = $helpers->select_all_with_params("verification", "id=$applicant->verification_id");
-
-                        $verification = "";
-                        if (count($get_verification_data) > 0) {
-                          $status = $get_verification_data[0]->status;
-
-                          if ($status === "pending") {
-                            $verification = "<span class='badge bg-label-warning me-1'>$status</span>";
-                          } else if ($status === "denied") {
-                            $verification = "<span class='badge bg-label-danger me-1'>$status</span>";
-                          } else if ($status === "approved") {
-                            $verification = "<span class='badge bg-label-success me-1'>$status</span>";
-                          }
-                        }
                     ?>
                         <tr>
                           <td class="td-image">
@@ -82,9 +66,6 @@ $pageName = "Applicant Lists";
                           <td><?= $helpers->get_full_name($applicant->id, "with_middle") ?></td>
                           <td><?= $applicant->address ?></td>
                           <td><?= $applicant->email ?></td>
-                          <td><?= $verification ?>
-
-                          </td>
                           <td><?= date("m-d-Y", strtotime($applicant->date_created)) ?></td>
                           <td>
                             <?php if ($applicant->id != $LOGIN_USER->id) : ?>

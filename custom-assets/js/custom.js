@@ -46,6 +46,34 @@ window.handleDelete = function (
     });
 };
 
+window.handleDeleteNoConfirm = function (
+  backendUrl,
+  postData = {
+    table: "",
+    column: "",
+    val: "",
+  }
+) {
+  $.post(backendUrl, postData, (data, status) => {
+    const resp = JSON.parse(data);
+    if (!resp.success) {
+      swal.fire({
+        title: "Error!",
+        html: resp.message,
+        icon: "error",
+      });
+    } else {
+      window.location.reload();
+    }
+  }).fail(function (e) {
+    swal.fire({
+      title: "Error!",
+      html: e.statusText,
+      icon: "error",
+    });
+  });
+};
+
 window.handleOpenModalImg = (
   el,
   modalId,

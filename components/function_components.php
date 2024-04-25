@@ -32,6 +32,11 @@ function head(string $title)
     <link rel='stylesheet' href='https://cdn.datatables.net/responsive/3.0.0/css/responsive.bootstrap5.css' />
 
     <link rel='stylesheet' href='https://cdn.datatables.net/searchbuilder/1.7.0/css/searchBuilder.bootstrap5.css' />
+
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css' />
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css' />
+
+    <link rel='stylesheet' href='https://cdn.datatables.net/datetime/1.5.2/css/dataTables.dateTime.min.css' />
     <link rel='stylesheet' href='https://cdn.datatables.net/datetime/1.5.2/css/dataTables.dateTime.min.css' />
 
     <link rel='stylesheet' href='$serverName/custom-assets/components/image-upload/css/bootstrap-imageupload.min.css'>

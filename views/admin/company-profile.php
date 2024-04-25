@@ -212,7 +212,7 @@ $pageName = "Preview Company";
           title: resp.success ? "Success" : "Error",
           html: resp.message,
           icon: resp.success ? "success" : "error",
-        }).then(() => resp.success ? window.location.replace("<?= SERVER_NAME . "/views/admin/company-verification" ?>") : undefined)
+        }).then(() => resp.success ? window.location.replace("<?= SERVER_NAME . "/views/admin/companies" ?>") : undefined)
       },
       error: function(data) {
         swal.fire({

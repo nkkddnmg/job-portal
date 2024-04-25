@@ -6,7 +6,7 @@ if (!isset($_SESSION["id"])) {
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
-$pageName = "Company Verification";
+$pageName = "Companies";
 ?>
 <!DOCTYPE html>
 
@@ -56,9 +56,9 @@ $pageName = "Company Verification";
 
                     if (count($companies) > 0) :
                       foreach ($companies as $company) :
-                        $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id'");
+                        $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id' ");
 
-                        if ($verificationData->status != "approved") continue;
+                        if ($verificationData && $verificationData->status == "denied") continue;
 
                         $modal_id = "company-img-modal_$company->id";
                         $img_id = "company-image_$company->id";
@@ -76,13 +76,26 @@ $pageName = "Company Verification";
                           <td><?= $industryData ? $industryData->name : $NA ?></td>
                           <td><?= $company->address ?></td>
                           <td>
-                            <span class="badge bg-label-success me-1">Completed</span>
+                            <?php if ($company->verification_id) : ?>
+                              <?php
+                              if ($verificationData->status == "pending") :
+                              ?>
+                                <span class="badge bg-label-warning me-1">Pending</span>
+                              <?php else : ?>
+                                <span class="badge bg-label-success me-1">Approved</span>
+                              <?php endif; ?>
+                            <?php else : ?>
+                              <span class="badge bg-label-danger me-1">No Verification</span>
+                            <?php endif; ?>
+
                           </td>
                           <td><?= date("m-d-Y", strtotime($company->date_created)) ?></td>
                           <td>
-                            <button type="button" class="btn btn-primary btn-sm" onclick='return window.location.href =`<?= SERVER_NAME . "/views/admin/company-profile?id=$company->id" ?>`'>
-                              View
-                            </button>
+                            <?php if ($verificationData && ($verificationData->status == "pending" || $verificationData->status == "approved")) : ?>
+                              <button type="button" class="btn btn-primary btn-sm" onclick='return window.location.href =`<?= SERVER_NAME . "/views/admin/company-profile?id=$company->id" . ($verificationData->status == "pending" ? "&&verify" : "") ?>`'>
+                                View
+                              </button>
+                            <?php endif; ?>
                           </td>
                         </tr>
 

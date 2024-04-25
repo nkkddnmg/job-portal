@@ -131,7 +131,7 @@
               if (resp.role == "employer") {
                 location = `<?= SERVER_NAME . "/views/company-details?t=" ?>${resp.token}`;
               } else if (resp.role == "applicant") {
-                location = `<?= SERVER_NAME . "/views/create-resume?t=" ?>${resp.token}`;
+                location = `<?= SERVER_NAME . "/views/add-education?t=" ?>${resp.token}`;
               }
 
               window.location.href = location

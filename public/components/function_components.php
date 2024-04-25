@@ -25,8 +25,12 @@ function head(string $title)
       <link rel='stylesheet' href='$serverName/public/assets/css/owl.carousel.min.css'>
       <link rel='stylesheet' href='$serverName/public/assets/css/animate.min.css'>
 
+      <link rel='stylesheet' href='$serverName/assets/vendor/fonts/boxicons.css' />
+      
       <!-- MAIN CSS -->
       <link rel='stylesheet' href='$serverName/public/assets/css/style.css'>
+
+      <link rel='stylesheet' href='$serverName/custom-assets/css/custom.css'>
     </head>
   ";
 }

@@ -13,7 +13,7 @@
   <div class="container-fluid">
     <div class="row align-items-center">
       <div class="site-logo col-6">
-        <a href="<?= SERVER_NAME . "/views/home" ?>">Job Portal</a>
+        <a href="<?= SERVER_NAME . "/public/views/home" ?>">Job Portal</a>
       </div>
 
       <nav class="mx-auto site-navigation">
@@ -59,10 +59,10 @@
             </li>
           <?php else : ?>
             <li class="d-lg-none">
-              <a class="dropdown-item" href="#">My Profile</a>
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/profile" ?>">My Profile</a>
             </li>
             <li class="d-lg-none">
-              <a class="dropdown-item" href="#">My Jobs</a>
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/my-jobs" ?>">My Jobs</a>
             </li>
             <li class="d-lg-none">
               <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
@@ -86,8 +86,8 @@
               <h4 class="dropdown-header h4">
                 <strong><?= $LOGIN_USER->email ?></strong>
               </h4>
-              <a class="dropdown-item" href="#">My Profile</a>
-              <a class="dropdown-item" href="#">My Jobs</a>
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/profile" ?>">My Profile</a>
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/my-jobs" ?>">My Jobs</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
             </div>

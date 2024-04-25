@@ -6,7 +6,7 @@ if (!isset($_SESSION["id"])) {
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
-$pageName = "Company Verification";
+$pageName = "Denied Companies";
 ?>
 <!DOCTYPE html>
 
@@ -52,14 +52,14 @@ $pageName = "Company Verification";
                   </thead>
                   <tbody>
                     <?php
-                    $companies = $helpers->select_all("company");
+                    $companies = $helpers->select_all_with_params("company", "verification_id IS NOT NULL");
 
                     if (count($companies) > 0) :
                       foreach ($companies as $company) :
                         $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id'");
 
-                        if ($verificationData->status != "denied") continue;
-
+                        if ($company->verification_id && $verificationData && $verificationData->status != "denied") continue;
+                        
                         $modal_id = "company-img-modal_$company->id";
                         $img_id = "company-image_$company->id";
                         $caption_id = "company-caption_$company->id";

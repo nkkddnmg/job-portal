@@ -29,3 +29,6 @@
 <script src="<?= SERVER_NAME . "/public/assets/js/custom.js" ?>"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="<?= SERVER_NAME . "/custom-assets/js/custom.js" ?>"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.2.24/jquery.autocomplete.min.js"></script>

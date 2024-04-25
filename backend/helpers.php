@@ -34,14 +34,14 @@ class Helpers
 
     if ($user == "admin") {
       $links = array(
-        array(
-          "title" => "Dashboard",
-          "config" => array(
-            "icon" => "bx bxs-home-circle",
-            "url" => (SERVER_NAME . "/views/admin/dashboard"),
-            "is_dropdown" => false
-          )
-        ),
+        // array(
+        //   "title" => "Dashboard",
+        //   "config" => array(
+        //     "icon" => "bx bxs-home-circle",
+        //     "url" => (SERVER_NAME . "/views/admin/dashboard"),
+        //     "is_dropdown" => false
+        //   )
+        // ),
         array(
           "title" => "Users",
           "config" => array(
@@ -63,14 +63,14 @@ class Helpers
             )
           )
         ),
-        array(
-          "title" => "Verifications",
-          "config" => array(
-            "icon" => "bx bxs-shield-x",
-            "url" => (SERVER_NAME . "/views/admin/company-verification"),
-            "is_dropdown" => false
-          )
-        ),
+        // array(
+        //   "title" => "Verifications",
+        //   "config" => array(
+        //     "icon" => "bx bxs-shield-x",
+        //     "url" => (SERVER_NAME . "/views/admin/company-verification"),
+        //     "is_dropdown" => false
+        //   )
+        // ),
         array(
           "title" => "Companies",
           "config" => array(
@@ -99,38 +99,55 @@ class Helpers
       );
     } else if ($user == "employer") {
       $links = array(
-        array(
-          "title" => "Dashboard",
-          "config" => array(
-            "icon" => "bx bxs-home-circle",
-            "url" => (SERVER_NAME . "/views/dashboard"),
-            "is_dropdown" => false
-          )
-        ),
-        array(
-          "title" => "Candidates",
-          "config" => array(
-            "icon" => "bx bxs-user-account",
-            "url" => (SERVER_NAME . "/views/admin/candidates"),
-            "is_dropdown" => false
-          )
-        ),
-        array(
-          "title" => "Employees",
-          "config" => array(
-            "icon" => "bx bxs-buildings",
-            "url" => (SERVER_NAME . "/views/admin/employees"),
-            "is_dropdown" => false
-          )
-        ),
+        // array(
+        //   "title" => "Dashboard",
+        //   "config" => array(
+        //     "icon" => "bx bxs-home-circle",
+        //     "url" => (SERVER_NAME . "/views/dashboard"),
+        //     "is_dropdown" => false
+        //   )
+        // ),
         array(
           "title" => "Jobs",
           "config" => array(
             "icon" => "bx bxs-briefcase",
-            "url" => (SERVER_NAME . "/views/admin/jobs"),
+            "url" => (SERVER_NAME . "/views/jobs"),
             "is_dropdown" => false
           )
         ),
+        array(
+          "title" => "Applicants",
+          "config" => array(
+            "icon" => "bx bxs-user-account",
+            "url" => (SERVER_NAME . "/views/candidates"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Interviews",
+          "config" => array(
+            "icon" => "bx bxs-calendar",
+            "url" => (SERVER_NAME . "/views/interviews"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Hired",
+          "config" => array(
+            "icon" => "bx bxs-buildings",
+            "url" => (SERVER_NAME . "/views/hired"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Not Selected",
+          "config" => array(
+            "icon" => "bx bxs-user-x",
+            "url" => (SERVER_NAME . "/views/not-selected"),
+            "is_dropdown" => false
+          )
+        ),
+
       );
     }
     return $links;
@@ -157,14 +174,14 @@ class Helpers
           "is_logged_in_required" => false,
         )
       ),
-      array(
-        "title" => "Company Reviews",
-        "config" => array(
-          "url" => "#"/*(SERVER_NAME . "/public/views/company-reviews")*/,
-          "is_dropdown" => false,
-          "is_logged_in_required" => false,
-        )
-      ),
+      // array(
+      //   "title" => "Company Reviews",
+      //   "config" => array(
+      //     "url" => "#"/*(SERVER_NAME . "/public/views/company-reviews")*/,
+      //     "is_dropdown" => false,
+      //     "is_logged_in_required" => false,
+      //   )
+      // ),
 
     );
     return $links;

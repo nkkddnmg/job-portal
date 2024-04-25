@@ -1,5 +1,7 @@
 <?php
 session_start();
+date_default_timezone_set("Asia/Manila");
+
 include(__DIR__ . "/helpers.php");
 
 try {
@@ -65,6 +67,45 @@ try {
       case "save_industry":
         save_industry();
         break;
+      case "add_education":
+        add_education();
+        break;
+      case "edit_education":
+        edit_education();
+        break;
+      case "add_work_experience":
+        add_work_experience();
+        break;
+      case "edit_work_experience":
+        edit_work_experience();
+        break;
+      case "add_skills":
+        add_skills();
+        break;
+      case "get_all_skills":
+        get_all_skills();
+        break;
+      case "add_job":
+        add_job();
+        break;
+      case "job_status_save":
+        job_status_save();
+        break;
+      case "update_job":
+        update_job();
+        break;
+      case "applicant_apply":
+        applicant_apply();
+        break;
+      case "set_interview":
+        set_interview();
+        break;
+      case "application_status_save":
+        application_status_save();
+        break;
+      case "add_search_keyword":
+        add_search_keyword();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -74,7 +115,533 @@ try {
     }
   }
 } catch (Exception $e) {
-  echo "<script>console.log(`" . ($e->getMessage()) . "`)</script>";
+  $response["success"] = false;
+  $response["message"] = $e->getMessage();
+  $helpers->return_response($response);
+}
+
+function add_search_keyword()
+{
+  global $helpers, $_POST, $conn;
+
+  $keyword = $_POST["keyword"];
+  $job_type = $_POST["job_type"];
+
+  $keywordData = array(
+    "keywords" => $keyword
+  );
+
+  $inData = $helpers->insert("search_keywords", $keywordData);
+
+  $response["link"] = SERVER_NAME . "/public/views/job-listing?k=$keyword" . ($job_type ? "&&j=$job_type" : "");
+
+  $helpers->return_response($response);
+}
+
+function application_status_save()
+{
+  global $helpers, $_POST, $conn;
+
+  $candidate_id = $_POST["candidate_id"];
+  $action = $_POST["action"];
+
+  $updateJobStatus = $helpers->update("candidates", array("status" => $action), "id", $candidate_id);
+
+  if ($updateJobStatus) {
+    $response["success"] = true;
+
+    if ($action == "Hired") {
+      $response["message"] = "Applicant successfully hired";
+    } else if ($action == "Not selected by employer") {
+      $response["message"] = "Applicant successfully set to Not Selected";
+    } else if ($action == "Withdrawn") {
+      $response["message"] = "Application successfully withdrawn";
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function set_interview()
+{
+  global $helpers, $_POST, $conn;
+
+  $candidate_id = $_POST["candidate_id"];
+
+  $interview_date = $_POST["interview_date"];
+  $time_from = $_POST["time_from"];
+  $time_to = $_POST["time_to"];
+
+  $candidateData = array(
+    "status" => "Interviewing",
+    "interview_date" => "$interview_date",
+    "interview_time" => "$time_from - $time_to"
+  );
+
+  $candidate_id = $helpers->update("candidates", $candidateData, "id", $candidate_id);
+
+  if ($candidate_id) {
+    $response["success"] = true;
+    $response["message"] = "Interview date set successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function applicant_apply()
+{
+  global $helpers, $_POST, $conn;
+
+  $job_id = $_POST["job_id"];
+  $user_id = $_POST["user_id"];
+
+  $candidateData = array(
+    "user_id" => $user_id,
+    "job_id" => $job_id,
+    "status" => "Applied"
+  );
+
+  $candidate_id = $helpers->insert("candidates", $candidateData);
+
+  if ($candidate_id) {
+    $response["success"] = true;
+    $response["message"] = "Applied Successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function update_job()
+{
+  global $helpers, $_POST, $conn;
+
+  $job_id = $_POST["job_id"];
+
+  $title = $_POST["title"];
+  $job_type = $_POST["job_type"];
+  $experience_level = $_POST["experience_level"];
+  $location_type = $_POST["location_type"];
+  $schedule = $_POST["schedule"];
+
+  $min = doubleval(str_replace(",", "", $_POST["min"]));
+  $max = doubleval(str_replace(",", "", $_POST["max"]));
+  $range = $_POST["range"];
+  $benefits = $_POST["benefits"];
+
+  $post_qualifications = $_POST["qualifications"];
+  $post_experience = isset($_POST["experience"]) ? $_POST["experience"] : null;
+
+  $pay = (number_format($min, 2, ".", ",") . " - " . number_format($max, 2, ".", ",") . " $range");
+
+  $description = $_POST["description"];
+
+  for ($i = 0; $i < count($post_qualifications); $i++) {
+    $qualification = $post_qualifications[$i];
+
+    if (!is_numeric($qualification)) {
+      $skillData = $helpers->select_all_individual("skills_list", "LOWER(name)=LOWER('$qualification')");
+
+      if (!$skillData) {
+        $skill_id = $helpers->insert("skills_list", array("name" => ucwords($qualification)));
+
+        $post_qualifications[$i] = $skill_id;
+      }
+    } else {
+      $post_qualifications[$i] = intval($qualification);
+    }
+  }
+
+  if ($post_experience) {
+    for ($i = 0; $i < count($post_experience); $i++) {
+      $experience = $post_experience[$i];
+
+      if (!is_numeric($experience)) {
+        $experienceData = $helpers->select_all_individual("experience_list", "LOWER(name)=LOWER('$experience')");
+
+        if (!$experienceData) {
+          $experience_id = $helpers->insert("experience_list", array("name" => ucwords($experience)));
+
+          $post_experience[$i] = $experience_id;
+        } else {
+          $post_experience[$i] = intval($experienceData->id);
+        }
+      } else {
+        $post_experience[$i] = intval($experience);
+      }
+    }
+  }
+
+  $jobPostData = array(
+    "title" => ucwords($title),
+    "type" => $job_type,
+    "experience_level" => $experience_level,
+    "location_type" => $location_type,
+    "schedule" => json_encode($schedule),
+    "description" => nl2br($description),
+    "pay" => $pay,
+    "benefits" => json_encode($benefits),
+    "qualifications" => json_encode($post_qualifications),
+    "experience" => json_encode($post_experience),
+    "status" => "active"
+  );
+
+  $job_id = $helpers->update("job", $jobPostData, "id", $job_id);
+
+  if ($job_id) {
+    $response["success"] = true;
+    $response["message"] = "Job Updated Successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function job_status_save()
+{
+  global $helpers, $_POST, $conn;
+
+  $job_id = $_POST["job_id"];
+  $action = $_POST["action"];
+
+  $updateJobStatus = $helpers->update("job", array("status" => $action), "id", $job_id);
+
+  if ($updateJobStatus) {
+    $response["success"] = true;
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_job()
+{
+  global $helpers, $_POST, $conn;
+
+  $company_id = $_POST["company_id"];
+
+  $title = $_POST["title"];
+  $job_type = $_POST["job_type"];
+  $experience_level = $_POST["experience_level"];
+  $location_type = $_POST["location_type"];
+  $schedule = $_POST["schedule"];
+
+  $min = doubleval(str_replace(",", "", $_POST["min"]));
+  $max = doubleval(str_replace(",", "", $_POST["max"]));
+  $range = $_POST["range"];
+  $benefits = $_POST["benefits"];
+
+  $post_qualifications = $_POST["qualifications"];
+  $post_experience = isset($_POST["experience"]) ? $_POST["experience"] : null;
+
+  $pay = (number_format($min, 2, ".", ",") . " - " . number_format($max, 2, ".", ",") . " $range");
+
+  $description = $_POST["description"];
+
+  for ($i = 0; $i < count($post_qualifications); $i++) {
+    $qualification = $post_qualifications[$i];
+
+    if (!is_numeric($qualification)) {
+      $skillData = $helpers->select_all_individual("skills_list", "LOWER(name)=LOWER('$qualification')");
+
+      if (!$skillData) {
+        $skill_id = $helpers->insert("skills_list", array("name" => ucwords($qualification)));
+
+        $post_qualifications[$i] = $skill_id;
+      }
+    } else {
+      $post_qualifications[$i] = intval($qualification);
+    }
+  }
+
+  if ($post_experience) {
+    for ($i = 0; $i < count($post_experience); $i++) {
+      $experience = $post_experience[$i];
+
+      if (!is_numeric($experience)) {
+        $experienceData = $helpers->select_all_individual("experience_list", "LOWER(name)=LOWER('$experience')");
+
+        if (!$experienceData) {
+          $experience_id = $helpers->insert("experience_list", array("name" => ucwords($experience)));
+
+          $post_experience[$i] = $experience_id;
+        } else {
+          $post_experience[$i] = intval($experienceData->id);
+        }
+      } else {
+        $post_experience[$i] = intval($experience);
+      }
+    }
+  }
+
+  $jobPostData = array(
+    "company_id" => $company_id,
+    "title" => ucwords($title),
+    "type" => $job_type,
+    "experience_level" => $experience_level,
+    "location_type" => $location_type,
+    "schedule" => json_encode($schedule),
+    "description" => nl2br($description),
+    "pay" => $pay,
+    "benefits" => json_encode($benefits),
+    "qualifications" => json_encode($post_qualifications),
+    "experience" => json_encode($post_experience),
+    "status" => "active"
+  );
+
+  $job_id = $helpers->insert("job", $jobPostData);
+
+  if ($job_id) {
+    $response["success"] = true;
+    $response["message"] = "Job Posted Successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function get_all_skills()
+{
+  global $helpers, $_GET;
+
+  $params = isset($_GET["s"]) ? "LOWER(name) LIKE LOWER('%$_GET[s]%') " : "";
+
+  $skills_list = $helpers->select_all_with_params("skills_list", "$params ");
+
+  $data = array();
+
+  if (count($skills_list) > 0) {
+    foreach ($skills_list as $skill) {
+      array_push(
+        $data,
+        array(
+          "id" => $skill->id,
+          "name" => $skill->name,
+        )
+      );
+    }
+  }
+
+  $helpers->return_response($data);
+}
+
+function add_skills()
+{
+  global $helpers, $_POST, $conn;
+
+  $skill_id = isset($_POST["skill_id"]) ? $_POST["skill_id"] : null;
+  $token = $_POST["token"];
+  $skill = isset($_POST["skill_name"]) ? $_POST["skill_name"] : null;
+
+  if (!$skill_id) {
+    $skillData = $helpers->select_all_individual("skills_list", "LOWER(name)=LOWER('$skill')");
+
+    if (!$skillData) {
+      $skill_id = $helpers->insert("skills_list", array("name" => ucwords($skill)));
+    }
+  }
+
+  $applicantSkillData = array(
+    "user_id" => $helpers->decrypt($token),
+    "skill_id" => $skill_id
+  );
+
+  $applicationId = $helpers->insert("applicant_skills", $applicantSkillData);
+
+  if ($applicationId) {
+    $response["success"] = true;
+    $response["message"] = "Skill successfully added";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function edit_work_experience()
+{
+  global $helpers, $_POST, $conn;
+
+  $user_id = $helpers->decrypt($_POST["token"]);
+  $company_id = $_POST["company_id"];
+  $industry_id = $_POST["industry_id"];
+  $work_experience_id = $_POST["work_experience_id"];
+
+  $job_title = $_POST["job_title"];
+
+  $company_name = $_POST["company_name"];
+
+  $currently_working = isset($_POST["currently_working"]) ? $_POST["currently_working"] : null;
+
+  $work_from_month = $_POST["work_from_month"];
+  $work_from_year = $_POST["work_from_year"];
+
+  $work_to_month = isset($_POST["work_to_month"]) ? $_POST["work_to_month"] : null;
+  $work_to_year = isset($_POST["work_to_year"]) ? $_POST["work_to_year"] : null;
+
+  $work_from = "$work_from_month $work_from_year";
+  $work_to = $currently_working ? $currently_working : "$work_to_month $work_to_year";
+
+  if (empty($company_id)) {
+    $companyData = array(
+      "name" => $company_name
+    );
+
+    $company_id = $helpers->insert("company", $companyData);
+  }
+
+  $workExpData = array(
+    "user_id" => $user_id,
+    "job_title" => ucwords($job_title),
+    "company_id" => $company_id,
+    "industry_id" => $industry_id,
+    "work_from" => $work_from,
+    "work_to" => $work_to
+  );
+
+  $updateWorkExp = $helpers->update("work_experience", $workExpData, "id", $work_experience_id);
+
+  if ($updateWorkExp) {
+    $response["success"] = true;
+    $response["message"] = "Work Experience successfully updated";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_work_experience()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+
+  $job_title = $_POST["job_title"];
+
+  $company_id = $_POST["company_id"];
+  $industry_id = $_POST["industry_id"];
+  $company_name = $_POST["company_name"];
+
+  $currently_working = isset($_POST["currently_working"]) ? $_POST["currently_working"] : null;
+
+  $work_from_month = $_POST["work_from_month"];
+  $work_from_year = $_POST["work_from_year"];
+
+  $work_to_month = isset($_POST["work_to_month"]) ? $_POST["work_to_month"] : null;
+  $work_to_year = isset($_POST["work_to_year"]) ? $_POST["work_to_year"] : null;
+
+  $work_from = "$work_from_month $work_from_year";
+  $work_to = $currently_working ? $currently_working : "$work_to_month $work_to_year";
+
+  if (empty($company_id)) {
+    $companyData = array(
+      "name" => $company_name
+    );
+
+    $company_id = $helpers->insert("company", $companyData);
+  }
+
+  $workExpData = array(
+    "user_id" => $id,
+    "job_title" => ucwords($job_title),
+    "company_id" => $company_id,
+    "industry_id" => $industry_id,
+    "work_from" => $work_from,
+    "work_to" => $work_to
+  );
+
+  $workExpID = $helpers->insert("work_experience", $workExpData);
+
+  if ($workExpID) {
+    $response["success"] = true;
+    $response["message"] = "Work Experience successfully added";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function edit_education()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $_POST['id'];
+
+  $user_id = $helpers->decrypt($_POST["token"]);
+  $attainment = $_POST["attainment"];
+  $course = empty($_POST["course"]) ? "set_null" : ucwords($_POST["course"]);
+  $school_name = ucwords($_POST["school_name"]);
+  $school_year = $_POST["school_year"];
+
+  $educationData = array(
+    "user_id" => $user_id,
+    "attainment_id" => $attainment,
+    "course" => $course,
+    "school_name" => $school_name,
+    "sy" => $school_year
+  );
+
+  $education_id = $helpers->update("education", $educationData, "id", $id);
+
+  if ($education_id) {
+    $response["success"] = true;
+    $response["message"] = "Education added updated";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_education()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+  $attainment = $_POST["attainment"];
+  $course = empty($_POST["course"]) ? "set_null" : ucwords($_POST["course"]);
+  $school_name = ucwords($_POST["school_name"]);
+  $school_year = $_POST["school_year"];
+
+  $educationData = array(
+    "user_id" => $id,
+    "attainment_id" => $attainment,
+    "course" => $course,
+    "school_name" => $school_name,
+    "sy" => $school_year
+  );
+
+  $education_id = $helpers->insert("education", $educationData);
+
+  if ($education_id) {
+    $response["success"] = true;
+    $response["message"] = "Education added successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
 }
 
 function save_industry()
@@ -115,7 +682,7 @@ function save_industry()
       $response["success"] = true;
       $response["message"] = $message;
     } else {
-      $response["success"] = true;
+      $response["success"] = false;
       $response["message"] = $conn->error;
     }
   } else {
@@ -714,8 +1281,24 @@ function login()
 
   if ($user) {
     if (password_verify($password, $user->password)) {
+
       if ($user->role == "employer" && !$user->company_id) {
         $response["token"] = $helpers->encrypt($user->id);
+      } else if ($user->role == "applicant") {
+
+        $education = $helpers->select_all_with_params("education", "user_id='$user->id'");
+        $work_experience = $helpers->select_all_with_params("work_experience", "user_id='$user->id'");
+        $skills = $helpers->select_all_with_params("applicant_skills", "user_id='$user->id'");
+
+        if (count($education) == 0) {
+          $response["location"] = (SERVER_NAME . "/views/add-education?t=" . $helpers->encrypt($user->id));
+        } else if (count($education) > 0 && count($work_experience) == 0) {
+          $response["location"] = (SERVER_NAME . "/views/work-experience?t=" . $helpers->encrypt($user->id));
+        } else if (count($education) > 0 && count($work_experience) > 0 && count($skills) == 0) {
+          $response["location"] = (SERVER_NAME . "/views/add-skills?t=" . $helpers->encrypt($user->id));
+        } else {
+          $response["location"] = (SERVER_NAME . "/public/views/home");
+        }
       } else {
         $response["is_password_change"] = $user->is_password_changed == "0" ? false : true;
       }
