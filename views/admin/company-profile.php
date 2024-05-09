@@ -69,10 +69,10 @@ $pageName = "Preview Company";
                         <div class="form-group mb-3 col-md-4">
                           <label for="companyAddress" class="form-label">Address</label>
                           <?php
-                          foreach ($helpers->addressList as $add) :
-                            if ($add == $company->address) :
+                          foreach ($helpers->districtList as $district) :
+                            if ($district == $company->district) :
                           ?>
-                              <input class="form-control" type="text" id="companyAddress" name="companyAddress" value="<?= $company->address ?>" required readonly />
+                              <input class="form-control" type="text" id="companyAddress" name="companyAddress" value="<?= $company->district ?>" required readonly />
                             <?php endif; ?>
                           <?php endforeach; ?>
 
@@ -136,7 +136,7 @@ $pageName = "Preview Company";
                                     <?= $helpers->get_full_name($employer->id) ?>
                                   </h5>
                                   <span class="d-flex align-items-center" style="font-size: .75rem !important;">
-                                    <?= $employer->address ?>
+                                    <?= $employer->district ?>
                                   </span>
                                 </div>
                                 <button onclick='window.location.href = `<?= SERVER_NAME . "/views/profile?id=$employer->id" ?>`' class="btn btn-primary btn-sm py-1 px-2 ms-auto">

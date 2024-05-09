@@ -77,8 +77,8 @@ $pageName = "Add Admin";
                           <label for="address" class="form-label">Address</label>
                           <select class="form-select" name="address" id="address" required>
                             <option value="">-- select address --</option>
-                            <?php foreach ($helpers->addressList as $add) : ?>
-                              <option value="<?= $add ?>"><?= $add ?></option>
+                            <?php foreach ($helpers->districtList as $district) : ?>
+                              <option value="<?= $district ?>"><?= $district ?></option>
                             <?php endforeach; ?>
                           </select>
                         </div>

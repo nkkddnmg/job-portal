@@ -74,7 +74,7 @@ $pageName = "Companies";
                           </td>
                           <td><?= $company->name ?></td>
                           <td><?= $industryData ? $industryData->name : $NA ?></td>
-                          <td><?= $company->address ?></td>
+                          <td><?= $company->district ?></td>
                           <td>
                             <?php if ($company->verification_id) : ?>
                               <?php

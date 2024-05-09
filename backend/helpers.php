@@ -6,7 +6,7 @@ class Helpers
   private $conn;
   private $session;
 
-  public $addressList = array(
+  public $districtList = array(
     "Arevalo Iloilo City",
     "Iloilo City Proper",
     "Jaro Iloilo City",
@@ -235,6 +235,14 @@ class Helpers
   }
 
   /**  custom builder */
+
+  function array_unique_custom($array)
+  {
+    return array_intersect_key(
+      $array,
+      array_unique(array_map("strtolower", $array))
+    );
+  }
 
   public function generate_image_upload(
     $imageUploadDivId,
@@ -528,7 +536,7 @@ class Helpers
     return $data;
   }
 
-  public function select_custom_query($query)
+  public function custom_query($query)
   {
     $query = $this->conn->query($query);
 

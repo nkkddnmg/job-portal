@@ -46,7 +46,7 @@ if (isset($_SESSION["id"])) {
                 </div>
               </div>
               <?php
-              $top5Keywords = $helpers->select_custom_query("SELECT keywords FROM search_keywords GROUP BY keywords ORDER BY count(*) DESC LIMIT 5");
+              $top5Keywords = $helpers->custom_query("SELECT keywords FROM search_keywords GROUP BY keywords ORDER BY count(*) DESC LIMIT 5");
 
               if (count($top5Keywords) > 0) :
               ?>
@@ -115,7 +115,7 @@ if (isset($_SESSION["id"])) {
                     <strong><?= $company->name ?></strong>
                   </div>
                   <div class="job-listing-location mb-3 mb-sm-0 custom-width w-50">
-                    <span class="icon-room"></span> <?= $company->address . " - " . $job->location_type ?>
+                    <span class="icon-room"></span> <?= $company->district . " - " . $job->location_type ?>
                   </div>
                   <div class="job-listing-meta">
                     <?php

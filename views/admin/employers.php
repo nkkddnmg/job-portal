@@ -70,7 +70,7 @@ $pageName = "Employer Lists";
                           <td><?= $employer->fname ?></td>
                           <td><?= empty($employer->mname) ? "<em class='text-muted'>N/A</em>" : $employer->mname ?></td>
                           <td><?= $employer->lname ?></td>
-                          <td><?= $employer->address ?></td>
+                          <td><?= $employer->district ?></td>
                           <td><?= $employer->email ?></td>
                           <td><?= date("m-d-Y", strtotime($employer->date_created)) ?></td>
                           <td>

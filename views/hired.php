@@ -38,6 +38,7 @@ $pageName = "Hired";
 
             <div class="card">
               <div class="card-body">
+
                 <table id="hired-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
@@ -87,10 +88,9 @@ $pageName = "Hired";
                                     Preview Applicant Profile
                                   </button>
 
-                                  <!-- <button type="button" class="dropdown-item" onclick='handleCandidateStatusSave(`<?= $applicant->id ?>`, `Hired`)'>
+                                  <button type="button" class="dropdown-item" onclick='handleRate(`<?= $applicant->user_id ?>`, `<?= $helpers->get_full_name($applicant->user_id) ?>`)'>
                                     Rate
-                                  </button> -->
-
+                                  </button>
                                 </div>
                               </div>
                             </td>
@@ -129,48 +129,6 @@ $pageName = "Hired";
       </div>
     </div>
   </div>
-
-  <div class="modal fade" id="modalSetInterviewDate" data-bs-backdrop="static" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <form id="form-set-interview" class="modal-content">
-        <input type="text" name="candidate_id" readonly hidden>
-        <div class="modal-header">
-          <h5 class="modal-title">Set Interview Date</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col mb-3">
-              <label for="interview_date" class="form-label">Date</label>
-              <input type="date" id="interview_date" name="interview_date" class="form-control" min="<?= date("Y-m-d") ?>" placeholder="dd/mm/yyyy" required />
-            </div>
-          </div>
-
-          <div class="divider">
-            <div class="divider-text">Time</div>
-          </div>
-
-          <div class="row g-2">
-            <div class="col mb-0">
-              <label for="time_from" class="form-label">From</label>
-              <input type="time" id="time_from" name="time_from" class="form-control" min="<?= date("H:i") ?>" placeholder="hh:mm" required />
-            </div>
-            <div class="col mb-0">
-              <label for="time_to" class="form-label">To</label>
-              <input type="time" id="time_to" name="time_to" class="form-control" placeholder="hh:mm" required />
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            Close
-          </button>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>
 
@@ -179,63 +137,124 @@ $pageName = "Hired";
 <?php include("../components/footer.php") ?>
 
 <script>
-  function handleCandidateStatusSave(candidateId, action) {
-    swal.showLoading()
-    $.post("<?= SERVER_NAME . "/backend/nodes?action=application_status_save" ?>", {
-      candidate_id: candidateId,
-      action: action
-    }, (data, status) => {
-      const resp = JSON.parse(data);
-      if (!resp.success) {
-        swal.fire({
-          title: "Error!",
-          html: resp.message,
-          icon: "error",
-        });
-      } else {
-        window.location.reload();
-      }
-    });
+  function nl2br(str, is_xhtml) {
+    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
   }
 
-  $("#time_from").on("blur", function(e) {
-    $("#time_to").attr("min", e.target.value)
-  })
+  function handleRate(id, name) {
+    swal.showLoading();
 
-  $("#form-set-interview").on("submit", function(e) {
-    e.preventDefault();
+    getRateData(id).then((d) => {
+      const rateData = $.parseJSON(d)
 
-    swal.showLoading()
+      let btnStars = "";
 
-    $.ajax({
-      url: "<?= SERVER_NAME . "/backend/nodes?action=set_interview" ?>",
-      type: "POST",
-      data: new FormData(this),
-      contentType: false,
-      cache: false,
-      processData: false,
-      success: function(data) {
-        const resp = $.parseJSON(data)
+      for (let i = 1; i <= 5; i++) {
+        let btnWarning = "";
 
-        swal.fire({
-          title: resp.success ? "Success" : "Error",
-          html: resp.message,
-          icon: resp.success ? "success" : "error",
-        }).then(() => resp.success ? window.location.reload() : undefined)
-      },
-      error: function(data) {
-        swal.fire({
-          title: 'Oops...',
-          html: 'Something went wrong.',
-          icon: 'error',
-        })
+        if (rateData && Number(rateData.stars) >= i) {
+          btnWarning = "btn-warning";
+        }
+
+        btnStars += `
+                <button type="button" class="btn-rating-${id} btn btn-outline-secondary btn-lg mx-2 ${btnWarning}" data-attr="${i}" id="${id}-rating-star-${i}">
+                  <i class="bx bxs-star" aria-hidden="true"></i>
+                </button>`
       }
-    });
-  })
 
-  function handleSetInterviewDate(candidateID) {
-    $("input[name='candidate_id']").val(candidateID)
-    $("#modalSetInterviewDate").modal("show")
+      const rateHtml = `
+            <input type="text" id="applicant_id_${id}" value="${id}" readonly hidden>
+            <div class="row">
+              <div class="form-group text-center mb-3" id="rating-ability-wrapper">
+                <input type="text" id="selected_rating_${id}" value="${rateData ? rateData.stars : ""}" name="rating" hidden>
+                <h2 class="bold rating-header">
+                  <span class="selected-rating-${id}">${rateData ? rateData.stars : "0"}</span><small> / 5</small>
+                </h2>
+                ${btnStars}
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label for="feedback" class="form-label">Feedback</label>
+              <textarea class="form-control" id="feedback_${id}" name="feedback" rows="3" required>${rateData ? rateData.feedback : ""}</textarea>
+            </div>`;
+
+      swal.fire({
+        title: `Rate ${name}`,
+        html: rateHtml,
+        confirmButtonText: "Submit",
+        showDenyButton: true,
+        denyButtonText: "Cancel",
+        customClass: {
+          htmlContainer: 'swal-custom-container',
+        },
+        preConfirm: () => {
+          if (!$(`#selected_rating_${id}`).val()) {
+            swal.showValidationMessage(`Please select rating`);
+          } else if (!$(`#feedback_${id}`).val()) {
+            swal.showValidationMessage(`Please add feedback`);
+          } else {
+            return true
+          }
+        }
+      }).then((d) => {
+        swal.close();
+        swal.showLoading();
+        
+        if (d.isConfirmed) {
+          const applicantId = $(`#applicant_id_${id}`).val()
+          const rating = $(`#selected_rating_${id}`).val()
+          const feedback = $(`#feedback_${id}`).val()
+
+          $.post(
+            "<?= SERVER_NAME . "/backend/nodes?action=add_rating" ?>", {
+              applicantId: applicantId,
+              rating: rating,
+              feedback: feedback
+            },
+            (data, status) => {
+              const resp = $.parseJSON(data)
+
+              swal.fire({
+                title: resp.success ? "Success" : "Error",
+                html: resp.message,
+                icon: resp.success ? "success" : "error",
+              }).then(() => resp.success ? window.location.reload() : undefined)
+            }
+          )
+        }
+      })
+
+      $(`.btn-rating-${id}`).on('click', (function(e) {
+
+        var previous_value = $(`#selected_rating_${id}`).val();
+
+        var selected_value = $(this).attr("data-attr");
+        $(`#selected_rating_${id}`).val(selected_value);
+
+        $(`.selected-rating-${id}`).empty();
+        $(`.selected-rating-${id}`).html(selected_value);
+
+        for (i = 1; i <= selected_value; ++i) {
+          $(`#${id}-rating-star-${i}`).toggleClass('btn-warning');
+        }
+
+        for (ix = 1; ix <= previous_value; ++ix) {
+          $(`#${id}-rating-star-${ix}`).toggleClass('btn-warning');
+        }
+      }));
+    })
+  }
+
+  async function getRateData(applicantId) {
+    return await $.post(
+      "<?= SERVER_NAME . "/backend/nodes?action=get_rating" ?>", {
+        applicantId: applicantId
+      },
+      (data, status) => {
+        return $.parseJSON(data)
+      }
+    )
   }
 
   function handleOpenModal(src) {

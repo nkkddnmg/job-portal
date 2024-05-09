@@ -41,19 +41,33 @@ if (isset($_SESSION["id"])) {
         <ul class="nav nav-pills container-xl mt-4" id="myTab" role="tablist">
 
           <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="account-details-tab" data-toggle="tab" href="#account-details" type="button" role="tab" aria-controls="account-details" aria-selected="false">Account Details</a>
+            <a class="nav-link active" id="account-details-tab" data-toggle="tab" href="#account-details" type="button" role="tab" aria-controls="account-details" aria-selected="false">
+              Account Details
+            </a>
           </li>
 
           <li class="nav-item" role="presentation">
-            <a class="nav-link" id="education-tab" data-toggle="tab" href="#education" type="button" role="tab" aria-controls="education" aria-selected="false">Education</a>
+            <a class="nav-link" id="job-preference-tab" data-toggle="tab" href="#job-preference" type="button" role="tab" aria-controls="job-preference" aria-selected="false">
+              Job Preference
+            </a>
           </li>
 
           <li class="nav-item" role="presentation">
-            <a class="nav-link" id="work-exp-tab" data-toggle="tab" href="#work-exp" type="button" role="tab" aria-controls="work-exp" aria-selected="false">Work Experience</a>
+            <a class="nav-link" id="education-tab" data-toggle="tab" href="#education" type="button" role="tab" aria-controls="education" aria-selected="false">
+              Education
+            </a>
           </li>
 
           <li class="nav-item" role="presentation">
-            <a class="nav-link" id="skills-tab" data-toggle="tab" href="#skills" type="button" role="tab" aria-controls="skills" aria-selected="false">Skills</a>
+            <a class="nav-link" id="work-exp-tab" data-toggle="tab" href="#work-exp" type="button" role="tab" aria-controls="work-exp" aria-selected="false">
+              Work Experience
+            </a>
+          </li>
+
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="skills-tab" data-toggle="tab" href="#skills" type="button" role="tab" aria-controls="skills" aria-selected="false">
+              Skills
+            </a>
           </li>
           <?php if (!isset($_GET["id"])) : ?>
             <li class="nav-item" role="presentation">
@@ -100,11 +114,15 @@ if (isset($_SESSION["id"])) {
                     </div>
                     <div class="form-group mb-3 col-md-6">
                       <label for="address" class="form-label">Address</label>
+                      <input class="form-control" type="text" id="address" name="address" value="<?= $LOGIN_USER->address ?>" required />
+                    </div>
+                    <div class="form-group mb-3 col-md-6">
+                      <label for="district" class="form-label">District</label>
 
-                      <select class="form-control" name="address" id="address" required>
-                        <option value="">-- select address --</option>
-                        <?php foreach ($helpers->addressList as $add) : ?>
-                          <option value="<?= $add ?>" <?= $helpers->is_selected($add, $LOGIN_USER->address) ?>><?= $add ?></option>
+                      <select class="form-control" name="district" id="district" required>
+                        <option value="">-- select district --</option>
+                        <?php foreach ($helpers->districtList as $district) : ?>
+                          <option value="<?= $district ?>" <?= $helpers->is_selected($district, $LOGIN_USER->district) ?>><?= $district ?></option>
                         <?php endforeach; ?>
                       </select>
                     </div>
@@ -118,7 +136,38 @@ if (isset($_SESSION["id"])) {
                   </div>
                 </form>
               </div>
-              <!-- /Account -->
+
+              <?php include("../components/ratings.php"); ?>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="job-preference" role="tabpanel" aria-labelledby="job-preference-tab">
+            <div class="row d-flex justify-content-center">
+              <div class="col-md-6">
+                <div class="card mb-4">
+                  <?php $job_preference = $helpers->select_all_individual("job_preference", " user_id='$LOGIN_USER->id'"); ?>
+                  <div class="card-header position-relative">
+                    <h5 class="card-title text-dark">Job Preference</h5>
+                    <?php if ($job_preference) : ?>
+                      <div class="position-absolute m-2" style="top:0; right:0;">
+                        <a href="<?= SERVER_NAME . "/views/job-preference?t=" . $helpers->encrypt($LOGIN_USER->id) ?>" class="btn btn-default btn-sm p-0">
+                          <i class='bx bxs-edit h4'></i>
+                        </a>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                  <div class="card-body">
+                    <?php if ($job_preference) : ?>
+                      <?php include("../../components/form-job-preference.php") ?>
+                    <?php else : ?>
+                      <h3>
+                        No job preference yet
+                        <a href="<?= SERVER_NAME . "/views/job-preference?t=" . $helpers->encrypt($LOGIN_USER->id) ?>" class="btn btn-primary btn-sm ml-2">Add here</a>
+                      </h3>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -202,6 +251,12 @@ if (isset($_SESSION["id"])) {
                       </div>
                     </div>
                   <?php endforeach; ?>
+                <?php else : ?>
+                  <h3>
+                    No Work Experience
+                    <a href="<?= SERVER_NAME . "/views/work-experience?t=" . $helpers->encrypt($LOGIN_USER->id) . "&&from=profile" ?>" class="btn btn-primary btn-sm ml-2">Add here</a>
+                  </h3>
+
                 <?php endif; ?>
               </div>
             </div>

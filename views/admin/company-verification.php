@@ -74,7 +74,7 @@ $pageName = "Company Verification";
                           </td>
                           <td><?= $company->name ?></td>
                           <td><?= $industryData ? $industryData->name : $NA ?></td>
-                          <td><?= $company->address ?></td>
+                          <td><?= $company->district ?></td>
                           <td>
                             <span class="badge bg-label-warning me-1">Pending</span>
                           </td>

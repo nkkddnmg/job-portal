@@ -31,6 +31,9 @@ function head(string $title)
       <link rel='stylesheet' href='$serverName/public/assets/css/style.css'>
 
       <link rel='stylesheet' href='$serverName/custom-assets/css/custom.css'>
+
+      <script src='$serverName/public/assets/js/jquery.min.js'></script>
+      <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
     </head>
   ";
 }

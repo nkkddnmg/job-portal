@@ -49,27 +49,56 @@ $pageName = "Potential Candidates";
                     <?php
                     $potentialUserIds = array();
 
-                    $jobs = $helpers->select_all_with_params("job", "company_id='$LOGIN_USER->company_id'");
-                    if (count($jobs) > 0) {
-                      foreach ($jobs as $job) {
-                        $qualifications = array();
+                    $job = $helpers->select_all_individual("job", "id='$_GET[id]'");
 
-                        $job_qualifications = $helpers->select_all_with_params("experience_list", "id IN (" . (implode(', ', json_decode($job->qualifications, true))) . ")");
+                    $post_qualification = array();
+                    $post_experience = array();
 
-                        foreach ($job_qualifications as $job_qualification) {
-                          array_push($qualifications, $job_qualification->name);
+                    if ($job->qualifications) $post_qualification = json_decode($job->qualifications, true);
+                    if ($job->experience) $post_experience = json_decode($job->experience, true);
+
+                    $qualificationArray = array_merge($post_qualification, $post_experience);
+
+                    $qualifications = array();
+
+                    $job_qualifications = $helpers->select_all_with_params("experience_list", "id IN (" . (implode(', ', $qualificationArray)) . ")");
+
+                    foreach ($job_qualifications as $job_qualification) {
+                      array_push($qualifications, $job_qualification->name);
+                    }
+
+                    foreach ($qualifications as $qualification) {
+                      if ($qualification == "No Experience Needed") {
+                        $getUserNoExp = $helpers->custom_query("SELECT u.*, we.user_id FROM users u LEFT JOIN work_experience we ON we.user_id=u.id WHERE we.id IS NULL AND u.role = 'applicant'");
+
+                        if (count($getUserNoExp) > 0) {
+                          foreach ($getUserNoExp as $userNoExp) {
+                            array_push($potentialUserIds, $userNoExp->id);
+                          }
                         }
+                      } else {
+                        $potentialQ = $helpers->select_all_with_params("work_experience", "LOWER(job_title) LIKE LOWER('$qualification')");
 
-                        foreach ($qualifications as $qualification) {
-                          $potentialQ = $helpers->select_all_with_params("work_experience", "LOWER(job_title) LIKE LOWER('$qualification')");
-
-                          foreach ($potentialQ as $potential) {
+                        foreach ($potentialQ as $potential) {
+                          if (!in_array($potential->user_id, $potentialUserIds)) {
                             array_push($potentialUserIds, $potential->user_id);
                           }
                         }
                       }
                     }
-                    foreach ($potentialUserIds as $user_id) :
+
+                    $company = $helpers->select_all_individual("company", "id='$job->company_id'");
+
+                    $userInSameDistricts = $helpers->select_all_with_params("users", "role = 'applicant' AND district LIKE '%$company->district%'");
+
+                    if (count($userInSameDistricts) > 0) {
+                      foreach ($userInSameDistricts as $userIsSameDistrict) {
+                        array_push($potentialUserIds, $userIsSameDistrict->id);
+                      }
+                    }
+
+                    $uniqueUserIds = array_unique($potentialUserIds);
+                    foreach ($uniqueUserIds as $user_id) :
                     ?>
                       <tr>
                         <td><?= $helpers->get_full_name($user_id) ?></td>
@@ -88,7 +117,6 @@ $pageName = "Potential Candidates";
           </div>
         </div>
         <!-- / Content -->
-
       </div>
       <!-- Content wrapper -->
     </div>
@@ -114,7 +142,6 @@ $pageName = "Potential Candidates";
 
   <!-- Overlay -->
   <div class="layout-overlay layout-menu-toggle"></div>
-
 </body>
 
 <?php include("../components/footer.php") ?>

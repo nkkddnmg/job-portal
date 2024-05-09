@@ -34,7 +34,7 @@ if (isset($_SESSION["id"])) {
                 <h2><?= $job->title ?></h2>
                 <div>
                   <span class="ml-0 mr-2 mb-2"><span class="icon-briefcase mr-2"></span><?= $company->name ?></span>
-                  <span class="m-2"><span class="icon-room mr-2"></span><?= $company->address ?></span>
+                  <span class="m-2"><span class="icon-room mr-2"></span><?= $company->district ?></span>
                   <span class="m-2"><span class="icon-clock-o mr-2"></span><span class="text-primary"><?= $job->type ?></span></span>
                 </div>
               </div>
@@ -170,7 +170,7 @@ if (isset($_SESSION["id"])) {
                 <li class="mb-2"><strong class="text-black">Published on:</strong><?= date("M d, Y", strtotime($job->date_created)) ?></li>
                 <li class="mb-2"><strong class="text-black">Job Type:</strong> <?= $job->type ?></li>
                 <li class="mb-2"><strong class="text-black">Experience Level:</strong> <?= $job->experience_level ?></li>
-                <li class="mb-2"><strong class="text-black">Job Location:</strong> <?= $company->address ?></li>
+                <li class="mb-2"><strong class="text-black">Job Location:</strong> <?= $company->district ?></li>
                 <li class="mb-2"><strong class="text-black">Location Type:</strong> <?= $job->location_type ?></li>
                 <li class="mb-2"><strong class="text-black">Salary:</strong> <?= $job->pay ?></li>
               </ul>

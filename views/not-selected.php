@@ -54,7 +54,7 @@ $pageName = "Not Selected Applicants";
                     $jobs = $helpers->select_all_with_params("job", "company_id='$LOGIN_USER->company_id'");
                     if (count($jobs) > 0) :
                       foreach ($jobs as $job) :
-                        $applicants = $helpers->select_all_with_params("candidates", "job_id='$job->id' AND status='Not selected by employer'");
+                        $applicants = $helpers->select_all_with_params("candidates", "job_id='$job->id' AND status='Not selected by employer' AND user_id IS NOT NULL");
 
                         if (count($applicants) == 0) continue;
 

@@ -36,11 +36,15 @@
               </div>
               <div class="mb-3 form-group">
                 <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" name="address" id="address" placeholder="Enter your Address" required />
+              </div>
+              <div class="mb-3 form-group">
+                <label for="district" class="form-label">District</label>
 
-                <select class="form-select" name="address" id="address" required>
-                  <option value="">-- select address --</option>
-                  <?php foreach ($helpers->addressList as $add) : ?>
-                    <option value="<?= $add ?>"><?= $add ?></option>
+                <select class="form-select" name="district" id="district" required>
+                  <option value="">-- select district --</option>
+                  <?php foreach ($helpers->districtList as $district) : ?>
+                    <option value="<?= $district ?>"><?= $district ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -105,7 +109,18 @@
   function handleSubmit(role) {
     $("#inputRole").val(role)
 
-    $("#form-sign-up").submit();
+    swal.fire({
+        html: `Are you sure want to register as <strong>${role[0].toUpperCase() + role.substring(1)}</strong>`,
+        icon: "question",
+        confirmButtonText: "Yes",
+        denyButtonText: "Cancel",
+        showDenyButton: true,
+      })
+      .then((d) => {
+        if (d.isConfirmed) {
+          $("#form-sign-up").submit();
+        }
+      });
   }
 
   $("#form-sign-up").validate({

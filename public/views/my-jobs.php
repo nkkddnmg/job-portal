@@ -74,7 +74,7 @@ if (isset($_SESSION["id"])) {
                       </div>
 
                       <div class="job-listing-location mb-3 mb-sm-0 custom-width w-50" style="line-height: 90px;">
-                        <span class="icon-room"></span> <?= $company->address . " - " . $job->location_type ?>
+                        <span class="icon-room"></span> <?= $company->district . " - " . $job->location_type ?>
                       </div>
 
                       <div class="job-listing-meta">

@@ -72,7 +72,7 @@ $pageName = "Admin Lists";
                           <td><?= $admin->fname ?></td>
                           <td><?= empty($admin->mname) ? "<em class='text-muted'>N/A</em>" : $admin->mname ?></td>
                           <td><?= $admin->lname ?></td>
-                          <td><?= $admin->address ?></td>
+                          <td><?= $admin->district ?></td>
                           <td><?= $admin->email ?></td>
                           <td><?= date("m-d-Y", strtotime($admin->date_created)) ?></td>
                           <td>

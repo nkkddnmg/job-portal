@@ -86,11 +86,9 @@
               <?php endif; ?>
               <div class="row mt-3">
                 <div class="col-md-6 mt-2">
-                  <?php if (count($applicant_skills) > 0) : ?>
-                    <a href="javascript:void(0)" onclick="handleOnclickFinish()" class="btn  btn-primary d-grid w-100">
-                      Finish
-                    </a>
-                  <?php endif; ?>
+                  <a href="javascript:void(0)" onclick="handleOnclickFinish()" class="btn  btn-primary d-grid w-100">
+                    Finish
+                  </a>
                 </div>
                 <div class="col-md-6 mt-2">
                   <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleCancel()">

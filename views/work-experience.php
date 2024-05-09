@@ -164,13 +164,11 @@
                   </button>
                 </div>
 
-                <?php if (count($work_experience) > 0) : ?>
-                  <div class="col-md-12 mt-2">
-                    <a href="<?= SERVER_NAME . "/views/add-skills?t=$_GET[t]" ?>" class="btn btn-secondary d-grid w-100">
-                      Next
-                    </a>
-                  </div>
-                <?php endif; ?>
+                <div class="col-md-12 mt-2">
+                  <a href="<?= isset($_GET["from"]) ? (SERVER_NAME . "/public/views/profile") : (SERVER_NAME . "/views/add-skills?t=$_GET[t]") ?>" class="btn btn-secondary d-grid w-100">
+                    Next
+                  </a>
+                </div>
               </div>
             </form>
 

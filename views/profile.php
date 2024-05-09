@@ -16,6 +16,8 @@ $lname = "";
 $contact = "";
 $email = "";
 $address = "";
+$district = "";
+$position = "";
 
 $userData = null;
 
@@ -30,6 +32,8 @@ if (isset($_GET["id"])) {
   $contact = $userData->contact;
   $email = $userData->email;
   $address = $userData->address;
+  $district = $userData->district;
+  $position = $userData->position;
 
   if ($userData->role == "employer") {
     $pageName = "Employer Profile";
@@ -47,6 +51,8 @@ if (isset($_GET["id"])) {
   $contact = $LOGIN_USER->contact;
   $email = $LOGIN_USER->email;
   $address = $LOGIN_USER->address;
+  $district = $LOGIN_USER->district;
+  $position = $LOGIN_USER->position;
 
   $pageName = "My Profile";
 }
@@ -147,14 +153,24 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                             </div>
                             <div class="form-group mb-3 col-md-6">
                               <label for="address" class="form-label">Address</label>
+                              <input class="form-control" type="text" id="address" name="address" value="<?= $address ?>" required />
+                            </div>
+                            <div class="form-group mb-3 col-md-6">
+                              <label for="district" class="form-label">District</label>
 
-                              <select class="form-select" name="address" id="address" required>
-                                <option value="">-- select address --</option>
-                                <?php foreach ($helpers->addressList as $add) : ?>
-                                  <option value="<?= $add ?>" <?= $helpers->is_selected($add, $address) ?>><?= $add ?></option>
+                              <select class="form-control" name="district" id="district" required>
+                                <option value="">-- select district --</option>
+                                <?php foreach ($helpers->districtList as $districtVal) : ?>
+                                  <option value="<?= $districtVal ?>" <?= $helpers->is_selected($districtVal, $district) ?>><?= $districtVal ?></option>
                                 <?php endforeach; ?>
                               </select>
                             </div>
+
+                            <div class="form-group mb-3 col-md-6">
+                              <label for="position" class="form-label">Position</label>
+                              <input class="form-control" type="text" id="position" name="position" value="<?= $position ?>" required />
+                            </div>
+
                             <?php if (!isset($_GET["id"])) : ?>
                               <div class="mt-2">
                                 <button type="submit" class="btn btn-primary me-2">Save changes</button>
@@ -171,7 +187,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                       $companyImgLink = "";
                       $companyID = "";
                       $companyName = "";
-                      $companyAddress = "";
+                      $companyDistrict = "";
                       $industry = "";
                       $description = "";
 
@@ -184,7 +200,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                           $companyID = $getCompanyData->id;
 
                           $companyName = $getCompanyData->name;
-                          $companyAddress = $getCompanyData->address;
+                          $companyAddress = $getCompanyData->district;
                           $industryID = $getCompanyData->industry_id;
                           $description = nl2br($getCompanyData->description);
 
@@ -202,18 +218,24 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                           <?php
                           $verificationData = $helpers->select_custom_fields_individual("verification", array("status", "message", "business_permit"), "id='$verification_id'");
 
-                          if ($verificationData->status == "pending") :
+                          if ($verificationData && $verificationData->status == "pending") :
                           ?>
                             <div class="alert alert-warning mt-2">
-                              <?= $verificationData->message ?>
+                              <?= $verificationData ? $verificationData->message : "" ?>
                             </div>
-                          <?php elseif ($verificationData->status == "denied") : ?>
+                          <?php elseif ($verificationData && $verificationData->status == "denied") : ?>
                             <div class="alert alert-danger mt-2">
-                              <?= $verificationData->message ?>
+                              <?= $verificationData ? $verificationData->message : "" ?>
                             </div>
-                          <?php elseif ($verificationData->status == "approved") : ?>
+                          <?php elseif ($verificationData && $verificationData->status == "approved") : ?>
                             <div class="alert alert-success mt-2">
-                              <?= $verificationData->message ?>
+                              <?= $verificationData ? $verificationData->message : "" ?>
+                            </div>
+                          <?php endif; ?>
+
+                          <?php if (!$verificationData) : ?>
+                            <div class="alert alert-danger mt-2">
+                              Please update bussiness permit to verify company.
                             </div>
                           <?php endif; ?>
 
@@ -229,8 +251,8 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
 
                                 <select class="form-select" name="companyAddress" id="companyAddress" required>
                                   <option value="">-- select address --</option>
-                                  <?php foreach ($helpers->addressList as $add) : ?>
-                                    <option value="<?= $add ?>" <?= $helpers->is_selected($add, $companyAddress) ?>><?= $add ?></option>
+                                  <?php foreach ($helpers->districtList as $district) : ?>
+                                    <option value="<?= $district ?>" <?= $helpers->is_selected($district, $companyAddress) ?>><?= $district ?></option>
                                   <?php endforeach; ?>
                                 </select>
                               </div>
@@ -259,14 +281,20 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                                 <div id="inputLink">
                                   <label for="inputBusinessPermit" class="form-label">Business Permit</label>
                                   <div class="input-group ">
-                                    <input type="text" class="form-control text-primary" id="inputBusinessPermit" value="<?= $verificationData->business_permit ?>" required readonly>
+                                    <input type="text" class="form-control text-primary" id="inputBusinessPermit" value="<?= $verificationData ? $verificationData->business_permit : "" ?>" required readonly>
 
                                     <button class="btn btn-outline-warning" id="btnChangeBusinessPermit" type="button">
-                                      Change
+                                      <?php if (!$verificationData) : ?>
+                                        Upload
+                                      <?php else : ?>
+                                        Change
+                                      <?php endif; ?>
                                     </button>
-                                    <button class="btn btn-outline-primary" onclick='handleOpenModalImg(undefined, `divModalBusinessPermit`, `businessPermitImg`, `businessPermitCaption`, `<?= $verificationData->business_permit ?>`)' type="button">
-                                      Preview
-                                    </button>
+                                    <?php if ($verificationData) : ?>
+                                      <button class="btn btn-outline-primary" onclick='handleOpenModalImg(undefined, `divModalBusinessPermit`, `businessPermitImg`, `businessPermitCaption`, `<?= $verificationData->business_permit ?>`)' type="button">
+                                        Preview
+                                      </button>
+                                    <?php endif; ?>
                                   </div>
                                 </div>
                               </div>

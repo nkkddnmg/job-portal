@@ -64,7 +64,7 @@ $pageName = "Applicant Lists";
                             <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($applicant->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
                           <td><?= $helpers->get_full_name($applicant->id, "with_middle") ?></td>
-                          <td><?= $applicant->address ?></td>
+                          <td><?= $applicant->district ?></td>
                           <td><?= $applicant->email ?></td>
                           <td><?= date("m-d-Y", strtotime($applicant->date_created)) ?></td>
                           <td>

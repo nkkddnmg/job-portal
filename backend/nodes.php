@@ -106,6 +106,30 @@ try {
       case "add_search_keyword":
         add_search_keyword();
         break;
+      case "add_title":
+        add_title();
+        break;
+      case "add_job_type":
+        add_job_type();
+        break;
+      case "add_work_schedules":
+        add_work_schedules();
+        break;
+      case "add_base_pay":
+        add_base_pay();
+        break;
+      case "add_location_type":
+        add_location_type();
+        break;
+      case "add_rating":
+        add_rating();
+        break;
+      case "get_rating":
+        get_rating();
+        break;
+      case "get_all_ratings":
+        get_all_ratings();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -117,6 +141,281 @@ try {
 } catch (Exception $e) {
   $response["success"] = false;
   $response["message"] = $e->getMessage();
+  $helpers->return_response($response);
+}
+
+function get_all_ratings()
+{
+  global $helpers, $_POST;
+
+  $user_id = $_POST["user_id"];
+
+  $rateRes = $helpers->select_all_with_params("ratings", "user_id='$user_id'");
+
+  $helpers->return_response($rateRes);
+}
+
+function get_rating()
+{
+  global $helpers, $_SESSION, $_POST;
+
+  $rated_by = $_SESSION["id"];
+  $applicantId = $_POST["applicantId"];
+
+  $rateRes = $helpers->select_all_individual("ratings", "user_id='$applicantId' AND rated_by='$rated_by'");
+
+  $helpers->return_response($rateRes ?  $rateRes : null);
+}
+
+function add_rating()
+{
+  global $helpers, $_SESSION, $_POST, $conn;
+
+  $rated_by = $_SESSION["id"];
+  $applicantId = $_POST["applicantId"];
+  $rating = $_POST["rating"];
+  $feedback = $_POST["feedback"];
+
+  $comm = null;
+  $action = "added";
+
+  $rateRes = $helpers->select_all_individual("ratings", "user_id='$applicantId' AND rated_by='$rated_by'");
+
+  if ($rateRes) {
+    $comm = $conn->query("UPDATE ratings SET stars='$rating', feedback='$feedback' WHERE user_id='$applicantId' AND rated_by='$rated_by'");
+    $action = "updated";
+  } else {
+    $rateData = array(
+      "user_id" =>  $applicantId,
+      "rated_by" => $rated_by,
+      "stars" => $rating,
+      "feedback" => $feedback,
+    );
+    $comm = $helpers->insert("ratings", $rateData);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Ratings successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+
+  $helpers->return_response($_POST);
+}
+
+function add_location_type()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+  $location_type = isset($_POST["location_type"]) ? $helpers->array_unique_custom($_POST["location_type"]) : null;
+
+  $preference = array(
+    "user_id" => $id,
+    "location_type" => $location_type ? json_encode($location_type) : "set_null"
+  );
+
+  $comm = null;
+  $action = "added";
+
+  $preferenceData = $helpers->select_all_individual("job_preference", "user_id='$id'");
+
+  if ($preferenceData) {
+    if ($preferenceData->location_type) {
+      $action = "updated";
+    } else {
+      $action = "added";
+    }
+    $comm = $helpers->update("job_preference", $preference, "user_id", $id);
+  } else {
+    $comm = $helpers->insert("job_preference", $preference);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Job types successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_base_pay()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+  $min = isset($_POST["min"]) ? doubleval(str_replace(",", "", $_POST["min"])) : null;
+  $range = isset($_POST["range"]) ? $_POST["range"] : null;
+
+  $basePay =  $min && $range ? (number_format($min, 0, "", ",") . " $range") : null;
+
+  $preference = array(
+    "user_id" => $id,
+    "base_pay" => $basePay ? $basePay : "set_null"
+  );
+
+  $comm = null;
+  $action = "added";
+
+  $preferenceData = $helpers->select_all_individual("job_preference", "user_id='$id'");
+
+  if ($preferenceData) {
+    if ($preferenceData->base_pay) {
+      $action = "updated";
+    } else {
+      $action = "added";
+    }
+    $comm = $helpers->update("job_preference", $preference, "user_id", $id);
+  } else {
+    $comm = $helpers->insert("job_preference", $preference);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Base pay successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_work_schedules()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+
+  $days = isset($_POST["days"]) ? $_POST["days"] : null;
+  $shifts = isset($_POST["shifts"]) ? $_POST["shifts"] : null;
+  $schedules = isset($_POST["schedules"]) ? $_POST["schedules"] : null;
+
+  $work_schedules = array();
+
+  if ($days) $work_schedules["days"] = $days;
+  if ($shifts) $work_schedules["shifts"] = $shifts;
+  if ($schedules) $work_schedules["schedules"] = $schedules;
+
+  $preference = array(
+    "user_id" => $id,
+    "work_schedules" => count($work_schedules) > 0 ? json_encode($work_schedules) : "set_null"
+  );
+
+  $comm = null;
+  $action = "added";
+
+  $preferenceData = $helpers->select_all_individual("job_preference", "user_id='$id'");
+
+  if ($preferenceData) {
+    if ($preferenceData->work_schedules) {
+      $action = "updated";
+    } else {
+      $action = "added";
+    }
+    $comm = $helpers->update("job_preference", $preference, "user_id", $id);
+  } else {
+    $comm = $helpers->insert("job_preference", $preference);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Work schedules successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_job_type()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+  $job_type = isset($_POST["job_type"]) ? $helpers->array_unique_custom($_POST["job_type"]) : null;
+
+  $preference = array(
+    "user_id" => $id,
+    "job_types" => $job_type ? json_encode($job_type) : "set_null"
+  );
+
+  $comm = null;
+  $action = "added";
+
+  $preferenceData = $helpers->select_all_individual("job_preference", "user_id='$id'");
+
+  if ($preferenceData) {
+    if ($preferenceData->job_types) {
+      $action = "updated";
+    } else {
+      $action = "added";
+    }
+    $comm = $helpers->update("job_preference", $preference, "user_id", $id);
+  } else {
+    $comm = $helpers->insert("job_preference", $preference);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Job types successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+}
+
+function add_title()
+{
+  global $helpers, $_POST, $conn;
+
+  $id = $helpers->decrypt($_POST["token"]);
+  $titles = $helpers->array_unique_custom($_POST["title"]);
+
+  $preference = array(
+    "user_id" => $id,
+    "job_title" => json_encode($titles)
+  );
+
+  $comm = null;
+  $action = "added";
+  $preferenceData = $helpers->select_all_individual("job_preference", "user_id='$id'");
+
+  if ($preferenceData) {
+    if ($preferenceData->job_title) {
+      $action = "updated";
+    } else {
+      $action = "added";
+    }
+    $comm = $helpers->update("job_preference", $preference, "user_id", $id);
+  } else {
+    $comm = $helpers->insert("job_preference", $preference);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Job titles successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
   $helpers->return_response($response);
 }
 
@@ -738,7 +1037,7 @@ function company_save()
 
     $updateData = array(
       "name" => $name,
-      "address" => $companyAddress,
+      "district" => $companyAddress,
       "description" => nl2br($description),
       "industry_id" => $industry_id
     );
@@ -759,7 +1058,17 @@ function company_save()
           "message" => "Waiting for admin to validate the business permit."
         );
 
-        $helpers->insert("verification", $verificationData);
+        $verification_id = $helpers->insert("verification", $verificationData);
+
+        $updateData = array(
+          "verification_id" => $verification_id,
+          "name" => $name,
+          "address" => $companyAddress,
+          "description" => nl2br($description),
+          "industry_id" => $industry_id
+        );
+
+        $update = $helpers->update("company", $updateData, "id", $company_id);
       } else {
         $path = "../uploads/company";
         $business_permit = $helpers->upload_file($input_business_permit, $path);
@@ -940,7 +1249,7 @@ function get_all_companies()
       array_push(
         $data,
         array(
-          "address" => $company->address,
+          "address" => $company->district,
           "company_logo" => $helpers->get_company_logo_link($company->id),
           "description" => $company->description,
           "id" => $company->id,
@@ -1136,6 +1445,8 @@ function profile_save()
   $contact = $_POST["contact"];
   $email = $_POST["email"];
   $address = $_POST["address"];
+  $district = $_POST["district"];
+  $position = isset($_POST["position"]) ? $_POST["position"] : null;
 
   $user = $helpers->get_user_by_email($email, $id);
 
@@ -1145,8 +1456,10 @@ function profile_save()
       "mname" => $mname,
       "lname" => $lname,
       "address" => $address,
+      "district" => $district,
       "contact" => $contact,
-      "email" => $email
+      "email" => $email,
+      "position" => $position
     );
 
     $update = $helpers->update("users", $updateData, "id", $id);
@@ -1242,6 +1555,7 @@ function registration()
       "fname" => $_POST["fname"],
       "mname" => empty($_POST["mname"]) ? "set_null" : $_POST["mname"],
       "lname" => $_POST["lname"],
+      "district" => $_POST["district"],
       "address" => $_POST["address"],
       "contact" => $_POST["contact"],
       "email" => $_POST["email"],
@@ -1287,15 +1601,9 @@ function login()
       } else if ($user->role == "applicant") {
 
         $education = $helpers->select_all_with_params("education", "user_id='$user->id'");
-        $work_experience = $helpers->select_all_with_params("work_experience", "user_id='$user->id'");
-        $skills = $helpers->select_all_with_params("applicant_skills", "user_id='$user->id'");
 
         if (count($education) == 0) {
           $response["location"] = (SERVER_NAME . "/views/add-education?t=" . $helpers->encrypt($user->id));
-        } else if (count($education) > 0 && count($work_experience) == 0) {
-          $response["location"] = (SERVER_NAME . "/views/work-experience?t=" . $helpers->encrypt($user->id));
-        } else if (count($education) > 0 && count($work_experience) > 0 && count($skills) == 0) {
-          $response["location"] = (SERVER_NAME . "/views/add-skills?t=" . $helpers->encrypt($user->id));
         } else {
           $response["location"] = (SERVER_NAME . "/public/views/home");
         }
