@@ -66,19 +66,19 @@
               </div>
 
               <input type="text" name="role" id="inputRole" hidden>
-              <div class="row">
+              <div class="row" id="divButtons">
                 <div class="col-md-6 mt-2">
-                  <button class="btn btn-primary d-grid w-100" type="button" onclick="handleSubmit('applicant')">
+                  <button class="btn btn-primary w-100" type="button" onclick="handleSubmit('applicant')">
                     Applicant
                   </button>
                 </div>
                 <div class="col-md-6 mt-2">
-                  <button class="btn btn-outline-primary d-grid w-100" type="button" onclick="handleSubmit('employer')">
+                  <button class="btn btn-outline-primary w-100" type="button" onclick="handleSubmit('employer')">
                     Employer
                   </button>
                 </div>
                 <div class="col-md-12 mt-2">
-                  <button type="button" class="btn btn-secondary d-grid w-100" onclick="handleGoBackToPublicPage()">
+                  <button type="button" class="btn btn-secondary w-100" onclick="handleGoBackToPublicPage()">
                     Cancel
                   </button>
                 </div>
@@ -106,8 +106,23 @@
     window.location.href = '<?= SERVER_NAME . "/public/views/home" ?>'
   }
 
+  function showButtonLoading(buttonEl, enableLoading = true) {
+    const loadingEl = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>`;
+
+    if (enableLoading) {
+      buttonEl.addClass("disabled")
+      buttonEl.prepend(loadingEl)
+      $(buttonEl.children()[1]).addClass("d-none")
+    } else {
+      buttonEl.removeClass("disabled")
+      $(buttonEl.children()[1]).addClass("d-none")
+      $(buttonEl.children()[0]).remove()
+    }
+  }
+
   function handleSubmit(role) {
     $("#inputRole").val(role)
+    $("#divButtons").find("button").each((i, el) => showButtonLoading($(el)))
 
     swal.fire({
         html: `Are you sure want to register as <strong>${role[0].toUpperCase() + role.substring(1)}</strong>`,
@@ -119,13 +134,15 @@
       .then((d) => {
         if (d.isConfirmed) {
           $("#form-sign-up").submit();
+        } else {
+          $("#divButtons").find("button").each((i, el) => showButtonLoading($(el), false))
         }
       });
   }
 
   $("#form-sign-up").validate({
     submitHandler: function() {
-      swal.showLoading()
+      $("#divButtons").find("button").each((i, el) => showButtonLoading($(el)))
       $.ajax({
         url: "<?= SERVER_NAME . "/backend/nodes?action=register" ?>",
         type: "POST",
@@ -146,10 +163,12 @@
               if (resp.role == "employer") {
                 location = `<?= SERVER_NAME . "/views/company-details?t=" ?>${resp.token}`;
               } else if (resp.role == "applicant") {
-                location = `<?= SERVER_NAME . "/views/add-education?t=" ?>${resp.token}`;
+                location = `<?= SERVER_NAME . "/views/otp?t=" ?>${resp.token}`;
               }
 
               window.location.href = location
+            } else {
+              $("#divButtons").find("button").each((i, el) => showButtonLoading($(el), false))
             }
           })
         },

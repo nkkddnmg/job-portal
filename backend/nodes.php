@@ -3,6 +3,7 @@ session_start();
 date_default_timezone_set("Asia/Manila");
 
 include(__DIR__ . "/helpers.php");
+include(__DIR__ . "/ClassSendEmail.php");
 
 try {
   $host = "localhost";
@@ -130,6 +131,9 @@ try {
       case "get_all_ratings":
         get_all_ratings();
         break;
+      case "validate_otp":
+        validate_otp();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -141,6 +145,41 @@ try {
 } catch (Exception $e) {
   $response["success"] = false;
   $response["message"] = $e->getMessage();
+  $helpers->return_response($response);
+}
+
+function sendEmail($email, $body, $name, $subject)
+{
+  $sendSmtp = new SendEmail($email, $body, $name, $subject);
+
+  $success = $sendSmtp->response["success"];
+  $message = $sendSmtp->response["message"];
+}
+
+function validate_otp()
+{
+  global $helpers, $_POST, $conn;
+
+  $otp = $_POST["otp"];
+  $id = $helpers->decrypt($_POST["token"]);
+
+  $checkOtp = $helpers->select_all_with_params("otp", "otp='$otp'");
+
+  if (count($checkOtp) > 0) {
+    $comm = $conn->query("DELETE FROM otp WHERE user_id='$id'");
+
+    if ($comm) {
+      $response["success"] = true;
+      $response["message"] = "Email verified successfully.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = $conn->error;
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "One time password (OTP) not match";
+  }
+
   $helpers->return_response($response);
 }
 
@@ -444,7 +483,17 @@ function application_status_save()
   $candidate_id = $_POST["candidate_id"];
   $action = $_POST["action"];
 
-  $updateJobStatus = $helpers->update("candidates", array("status" => $action), "id", $candidate_id);
+  $data = array("status" => $action);
+
+  if ($action == "Hired") {
+    $data["date_hired"] = date("Y-m-d H:i:s");
+  }
+
+  if ($action == "Terminated" || $action == "Resigned") {
+    $data["date_separated"] = date("Y-m-d H:i:s");
+  }
+
+  $updateJobStatus = $helpers->update("candidates", $data, "id", $candidate_id);
 
   if ($updateJobStatus) {
     $response["success"] = true;
@@ -455,6 +504,10 @@ function application_status_save()
       $response["message"] = "Applicant successfully set to Not Selected";
     } else if ($action == "Withdrawn") {
       $response["message"] = "Application successfully withdrawn";
+    } else if ($action == "Terminated") {
+      $response["message"] = "Employee successfully terminated";
+    } else if ($action == "Resigned") {
+      $response["message"] = "Employee successfully resigned";
     }
   } else {
     $response["success"] = false;
@@ -1571,6 +1624,18 @@ function registration()
       $response["role"] = $_POST['role'];
       $response["token"] = $helpers->encrypt($comm);
 
+      if ($_POST['role'] == "applicant") {
+        $otp = $helpers->generateNumericOTP(6);
+        addOtp($comm, $otp);
+        $fullName = $helpers->get_full_name($comm);
+
+        $html_body = file_get_contents("./otp-email-template.html");
+        $html_body = str_replace('%name%', $fullName, $html_body);
+        $html_body = str_replace('%otp%', $otp, $html_body);
+
+        sendEmail($_POST["email"], $html_body, $fullName, "Email Verification");
+      }
+
       $_SESSION["id"] = $comm;
     } else {
       $response["success"] = false;
@@ -1582,6 +1647,19 @@ function registration()
   }
 
   $helpers->return_response($response);
+}
+
+function addOtp($user_id, $otp)
+{
+  global $helpers;
+
+  $checkOtp = $helpers->select_all_individual("otp", "otp='$otp'");
+
+  if ($checkOtp) {
+    addOtp($user_id, $helpers->generateNumericOTP(6));
+  } else {
+    $helpers->insert("otp", array("user_id" => $user_id, "otp" => "$otp"));
+  }
 }
 
 function login()
@@ -1600,12 +1678,28 @@ function login()
         $response["token"] = $helpers->encrypt($user->id);
       } else if ($user->role == "applicant") {
 
-        $education = $helpers->select_all_with_params("education", "user_id='$user->id'");
+        $getOtp = $helpers->select_all_with_params("otp", "user_id='$user->id'");
 
-        if (count($education) == 0) {
-          $response["location"] = (SERVER_NAME . "/views/add-education?t=" . $helpers->encrypt($user->id));
+        if (count($getOtp) > 0) {
+          $otp = $helpers->generateNumericOTP(6);
+          addOtp($user->id, $otp);
+          $fullName = $helpers->get_full_name($user->id);
+
+          $html_body = file_get_contents("./otp-email-template.html");
+          $html_body = str_replace('%name%', $fullName, $html_body);
+          $html_body = str_replace('%otp%', $otp, $html_body);
+
+          sendEmail($_POST["email"], $html_body, $fullName, "Email Verification");
+
+          $response["location"] = (SERVER_NAME . "/views/otp?t=" . $helpers->encrypt($user->id));
         } else {
-          $response["location"] = (SERVER_NAME . "/public/views/home");
+          $education = $helpers->select_all_with_params("education", "user_id='$user->id'");
+
+          if (count($education) == 0) {
+            $response["location"] = (SERVER_NAME . "/views/add-education?t=" . $helpers->encrypt($user->id));
+          } else {
+            $response["location"] = (SERVER_NAME . "/public/views/home");
+          }
         }
       } else {
         $response["is_password_change"] = $user->is_password_changed == "0" ? false : true;

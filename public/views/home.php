@@ -130,6 +130,141 @@ if (isset($_SESSION["id"])) {
         </div>
       </div>
     </section>
+    <?php if ($LOGIN_USER) : ?>
+      <section class="site-section py-4" id="jobPostings">
+        <div class="container">
+
+          <?php
+          $jobIds = array();
+
+          function handleAddIds($jobs)
+          {
+            global $jobIds;
+
+            if (count($jobs) > 0) {
+              foreach ($jobs as $job) {
+                array_push($jobIds, $job->id);
+              }
+            }
+          }
+
+          $jobList = $helpers->custom_query("SELECT j.*, c.district FROM job j LEFT JOIN company c ON c.id=j.company_id WHERE j.status <> 'inactive';");
+
+          foreach ($jobList as $job) {
+            if ($job->district == $LOGIN_USER->district) {
+              array_push($jobIds, $job->id);
+            }
+          }
+
+          $jobPreferences = $helpers->select_all_with_params("job_preference", "user_id='$LOGIN_USER->id'");
+
+          foreach ($jobPreferences as $jobPreference) {
+
+            if ($jobPreference->job_title) {
+              foreach (json_decode($jobPreference->job_title, true) as $jobTitle) {
+                $jobs = $helpers->select_all_with_params("job", "LOWER(title) LIKE LOWER('%$jobTitle%') AND status='active'");
+                handleAddIds($jobs);
+              }
+            }
+
+            if ($jobPreference->job_types) {
+              foreach (json_decode($jobPreference->job_types, true) as $jobType) {
+                $jobs = $helpers->select_all_with_params("job", "LOWER(type) LIKE LOWER('%$jobType%') AND status='active'");
+                handleAddIds($jobs);
+              }
+            }
+
+            if ($jobPreference->work_schedules) {
+              $workSchedule = json_decode($jobPreference->work_schedules, true);
+
+              $days = isset($workSchedule["days"]) ? $workSchedule["days"] : null;
+              $shifts = isset($workSchedule["shifts"]) ? $workSchedule["shifts"] : null;
+              $schedules = isset($workSchedule["schedules"]) ? $workSchedule["schedules"] : null;
+
+              if ($days) {
+                foreach ($days as $day) {
+                  $jobs = $helpers->select_all_with_params("job", "LOWER(schedule) LIKE LOWER('%$day%') AND status='active'");
+                  handleAddIds($jobs);
+                }
+              }
+
+              if ($shifts) {
+                foreach ($shifts as $shift) {
+                  $jobs = $helpers->select_all_with_params("job", "LOWER(schedule) LIKE LOWER('%$shift%') AND status='active'");
+                  handleAddIds($jobs);
+                }
+              }
+
+              if ($schedules) {
+                foreach ($schedules as $schedule) {
+                  $jobs = $helpers->select_all_with_params("job", "LOWER(schedule) LIKE LOWER('%$schedule%') AND status='active'");
+                  handleAddIds($jobs);
+                }
+              }
+            }
+
+            if ($jobPreference->location_type) {
+              foreach (json_decode($jobPreference->location_type, true) as $locationType) {
+                $jobs = $helpers->select_all_with_params("job", "LOWER(location_type) LIKE LOWER('%$locationType%') AND status='active'");
+                handleAddIds($jobs);
+              }
+            }
+          }
+
+          $uniqueJobs = array_unique($jobIds);
+          ?>
+          <div class="row mb-5 justify-content-center">
+            <div class="col-md-7 text-center">
+              <h2 class="section-title mb-2">Recommended Jobs</h2>
+            </div>
+          </div>
+          <?php if (count($uniqueJobs) > 0) : ?>
+            <ul class="job-listings mb-5">
+              <?php
+              foreach ($uniqueJobs as $jobId) :
+                $job = $helpers->select_all_individual("job", "id='$jobId'");
+                $company = $helpers->select_all_individual("company", "id='$job->company_id'");
+              ?>
+                <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+                  <a href="<?= SERVER_NAME . "/public/views/job-details?id=$job->id" ?>"></a>
+                  <div class="job-listing-logo">
+                    <img src="<?= $helpers->get_company_logo_link($company->id) ?>" class="img-fluid">
+                  </div>
+
+                  <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+                    <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
+                      <h2><?= $job->title ?></h2>
+                      <strong><?= $company->name ?></strong>
+                    </div>
+                    <div class="job-listing-location mb-3 mb-sm-0 custom-width w-50">
+                      <span class="icon-room"></span> <?= $company->district . " - " . $job->location_type ?>
+                    </div>
+                    <div class="job-listing-meta">
+                      <?php
+                      $badgeColor = "";
+
+                      if ($job->type == "Full time" || $job->type == "Full time") {
+                        $badgeColor = "badge-success";
+                      } else if ($job->type == "Part time" || $job->type == "Contract") {
+                        $badgeColor = "badge-primary";
+                      } else if ($job->type == "Temporary") {
+                        $badgeColor = "badge-danger";
+                      }
+
+                      ?>
+                      <span class="badge <?= $badgeColor ?>"><?= $job->type ?></span>
+                    </div>
+                  </div>
+
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php else : ?>
+            <h3 class="text-center">No Recommended Job Posted Yet</h3>
+          <?php endif; ?>
+        </div>
+      </section>
+    <?php endif; ?>
 
     <section class="site-section py-4" id="jobPostings">
       <div class="container">

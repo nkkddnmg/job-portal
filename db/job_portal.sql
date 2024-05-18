@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 09, 2024 at 06:01 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Generation Time: May 18, 2024 at 04:13 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -55,24 +55,26 @@ CREATE TABLE `candidates` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `job_id` int(11) DEFAULT NULL,
-  `status` enum('Applied','Interviewing','Not selected by employer','Hired','Withdrawn') NOT NULL,
+  `status` enum('Applied','Interviewing','Not selected by employer','Hired','Withdrawn','Terminated','Resigned') NOT NULL,
   `date_applied` timestamp NOT NULL DEFAULT current_timestamp(),
   `interview_date` text DEFAULT NULL,
   `interview_time` text DEFAULT NULL,
-  `date_modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `date_modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `date_separated` timestamp NULL DEFAULT NULL,
+  `date_hired` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `candidates`
 --
 
-INSERT INTO `candidates` (`id`, `user_id`, `job_id`, `status`, `date_applied`, `interview_date`, `interview_time`, `date_modified`) VALUES
-(1, NULL, 9, 'Withdrawn', '2024-04-25 08:38:33', NULL, NULL, '2024-04-25 19:17:28'),
-(2, NULL, 7, 'Not selected by employer', '2024-04-25 08:41:01', '2024-04-26', '16:40 - 17:30', '2024-04-25 19:06:33'),
-(3, NULL, 9, 'Applied', '2024-04-25 19:21:48', NULL, NULL, '2024-04-25 19:21:48'),
-(4, 10, 7, 'Withdrawn', '2024-04-25 22:27:53', NULL, NULL, '2024-04-25 22:28:17'),
-(5, 10, 7, 'Hired', '2024-04-25 22:28:27', '2024-04-29', '08:30 - 09:30', '2024-04-25 22:32:55'),
-(6, 11, 11, 'Hired', '2024-05-07 17:26:32', '2024-05-13', '02:28 - 02:28', '2024-05-07 17:27:48');
+INSERT INTO `candidates` (`id`, `user_id`, `job_id`, `status`, `date_applied`, `interview_date`, `interview_time`, `date_modified`, `date_separated`, `date_hired`) VALUES
+(1, NULL, 9, 'Withdrawn', '2024-04-25 08:38:33', NULL, NULL, '2024-04-25 19:17:28', '2024-05-18 07:58:38', '2024-05-18 15:51:06'),
+(2, NULL, 7, 'Not selected by employer', '2024-04-25 08:41:01', '2024-04-26', '16:40 - 17:30', '2024-04-25 19:06:33', '2024-05-18 07:58:38', '2024-05-18 15:51:06'),
+(3, NULL, 9, 'Applied', '2024-04-25 19:21:48', NULL, NULL, '2024-04-25 19:21:48', '2024-05-18 07:58:38', '2024-05-18 15:51:06'),
+(4, 10, 7, 'Withdrawn', '2024-04-25 22:27:53', NULL, NULL, '2024-04-25 22:28:17', '2024-05-18 07:58:38', '2024-05-18 15:51:06'),
+(5, 10, 7, 'Hired', '2024-04-25 22:28:27', '2024-04-29', '08:30 - 09:30', '2024-04-25 22:32:55', '2024-05-18 07:58:38', '2024-05-18 15:51:06'),
+(6, 11, 11, 'Hired', '2024-05-07 17:26:32', '2024-05-13', '02:28 - 02:28', '2024-05-18 08:13:11', NULL, '2024-05-18 16:07:09');
 
 -- --------------------------------------------------------
 
@@ -284,6 +286,28 @@ CREATE TABLE `job_preference` (
 
 INSERT INTO `job_preference` (`id`, `user_id`, `job_title`, `job_types`, `work_schedules`, `base_pay`, `location_type`) VALUES
 (4, 11, '[\"test\",\"test 2\"]', '[\"Full time\",\"Part time\",\"Permanent\",\"Fixed term\"]', '{\"days\":[\"Monday to Friday\"],\"shifts\":[\"8 hour shift\",\"10 hour shift\"]}', '40,000 per month', '[\"Remote (WFH)\"]');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `otp`
+--
+
+CREATE TABLE `otp` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `otp` varchar(45) NOT NULL,
+  `date_created` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `otp`
+--
+
+INSERT INTO `otp` (`id`, `user_id`, `otp`, `date_created`) VALUES
+(11, NULL, '128021', '2024-05-18 14:06:43'),
+(12, NULL, '740375', '2024-05-18 14:10:06'),
+(13, NULL, '112777', '2024-05-18 14:11:02');
 
 -- --------------------------------------------------------
 
@@ -523,6 +547,13 @@ ALTER TABLE `job_preference`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `otp`
+--
+ALTER TABLE `otp`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `ratings`
 --
 ALTER TABLE `ratings`
@@ -623,6 +654,12 @@ ALTER TABLE `job_preference`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `otp`
+--
+ALTER TABLE `otp`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
 -- AUTO_INCREMENT for table `ratings`
 --
 ALTER TABLE `ratings`
@@ -644,7 +681,7 @@ ALTER TABLE `skills_list`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `verification`
@@ -701,6 +738,12 @@ ALTER TABLE `job`
 --
 ALTER TABLE `job_preference`
   ADD CONSTRAINT `job_preference_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `otp`
+--
+ALTER TABLE `otp`
+  ADD CONSTRAINT `otp_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `ratings`

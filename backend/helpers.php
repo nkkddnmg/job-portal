@@ -132,10 +132,10 @@ class Helpers
           )
         ),
         array(
-          "title" => "Hired",
+          "title" => "Employees",
           "config" => array(
-            "icon" => "bx bxs-buildings",
-            "url" => (SERVER_NAME . "/views/hired"),
+            "icon" => "bx bxs-user-badge",
+            "url" => (SERVER_NAME . "/views/employees"),
             "is_dropdown" => false
           )
         ),
@@ -682,6 +682,18 @@ class Helpers
 
     session_destroy();
     header("location: $path");
+  }
+
+  function generateNumericOTP($n)
+  {
+    $generator = "1357902468";
+    $result = "";
+
+    for ($i = 1; $i <= $n; $i++) {
+      $result .= substr($generator, (rand() % (strlen($generator))), 1);
+    }
+
+    return $result;
   }
 
   function return_response($params)
