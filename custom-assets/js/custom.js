@@ -182,6 +182,27 @@ $("[required]")
     $(this).closest(".form-group").find("label").append(asterisk);
   });
 
+window.navigateSIgnUp = () => {
+  swal
+    .fire({
+      title: `Signing in as?`,
+      icon: "question",
+      confirmButtonText: "Employer",
+      denyButtonText: "Applicant",
+      showDenyButton: true,
+    })
+    .then((d) => {
+      const origin =
+        window.location.host === "localhost"
+          ? `${window.location.origin}/job-portal/views/sign-up`
+          : `${window.location.origin}/views/sign-up`;
+      if (d.isConfirmed) {
+        window.location.href = `${origin}?role=employer`;
+      } else if (d.isDenied) {
+        window.location.href = `${origin}?role=applicant`;
+      }
+    });
+};
 // $("#search_field").hideseek({
 //   nodata: "No results found",
 // });

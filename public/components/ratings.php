@@ -8,7 +8,7 @@ if (isset($_GET["t"])) {
   $id = $LOGIN_USER->id;
 }
 ?>
-<hr class="my-0">
+<!-- <hr class="my-0"> -->
 <div class="card-body p-4">
   <div class="divRating">
     <div id="outputRating"></div>

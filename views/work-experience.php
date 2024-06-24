@@ -164,11 +164,13 @@
                   </button>
                 </div>
 
-                <div class="col-md-12 mt-2">
-                  <a href="<?= isset($_GET["from"]) ? (SERVER_NAME . "/public/views/profile") : (SERVER_NAME . "/views/add-skills?t=$_GET[t]") ?>" class="btn btn-secondary d-grid w-100">
-                    Next
-                  </a>
-                </div>
+                <?php if (!isset($_GET["ref"])) : ?>
+                  <div class="col-md-12 mt-2">
+                    <a href="<?= isset($_GET["from"]) ? (SERVER_NAME . "/public/views/profile") : (SERVER_NAME . "/views/add-skills?t=$_GET[t]") ?>" class="btn btn-secondary d-grid w-100">
+                      Next
+                    </a>
+                  </div>
+                <?php endif; ?>
               </div>
             </form>
 
@@ -182,7 +184,17 @@
 <?php include("../components/footer.php") ?>
 
 <script>
-  const handleCancel = () => window.location.href = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
+  const handleCancel = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    let location = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
+
+    if (searchParams.has("ref")) {
+      location = searchParams.get("ref")
+    }
+    
+    window.location.href = location
+  };
 
   const handleWorkExperienceDelete = (id) => {
     const postData = {

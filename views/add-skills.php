@@ -115,6 +115,7 @@
       window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>"
     }
   }
+  
   const handleCancel = () => window.location.href = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
 
   function handleAddSkill(skillId, token) {

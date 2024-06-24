@@ -172,7 +172,12 @@ if (isset($_SESSION["id"])) {
           </div>
 
           <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
-            <div class="row d-flex justify-content-center">
+            <div class="row justify-content-end">
+              <div class="col-3">
+                <a href="javascript:void(0)" onclick='handleNavigateWithRef(`<?= SERVER_NAME . "/views/add-education?t=" . $helpers->encrypt($LOGIN_USER->id) ?>`)' class="btn btn-primary">Add Education</a>
+              </div>
+            </div>
+            <div class="row d-flex justify-content-center mt-4">
               <div class="col-md-8">
                 <?php
                 $educations = $helpers->select_all_with_params("education", "user_id='$LOGIN_USER->id'");
@@ -216,7 +221,12 @@ if (isset($_SESSION["id"])) {
           </div>
 
           <div class="tab-pane fade" id="work-exp" role="tabpanel" aria-labelledby="work-exp-tab">
-            <div class="row d-flex justify-content-center">
+            <div class="row justify-content-end">
+              <div class="col-4">
+                <a href="javascript:void(0)" onclick='handleNavigateWithRef(`<?= SERVER_NAME . "/views/work-experience?t=" . $helpers->encrypt($LOGIN_USER->id) ?>`)' class="btn btn-primary">Add Work Experience</a>
+              </div>
+            </div>
+            <div class="row d-flex justify-content-center mt-4">
               <div class="col-md-7">
                 <?php
                 $work_experience = $helpers->select_all_with_params("work_experience", "user_id='$LOGIN_USER->id'");
@@ -390,6 +400,11 @@ if (isset($_SESSION["id"])) {
   <!-- SCRIPTS -->
   <?php include("../components/footer.php") ?>
   <script>
+    function handleNavigateWithRef(location) {
+      const referrer = encodeURIComponent(window.location.href);
+      window.location.href = `${location}&ref=${referrer}`
+    }
+
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
       sessionStorage.setItem('lastTab', $(this).attr('href'));
     });

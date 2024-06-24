@@ -173,7 +173,15 @@ $pageName = "Employees List";
         title: resp.success ? "Success" : "Error",
         html: resp.message,
         icon: resp.success ? "success" : "error",
-      }).then(() => resp.success ? window.location.reload() : undefined)
+      }).then(() => {
+        if (resp.success) {
+          if (resp.id && resp.name) {
+            handleRate(resp.id, resp.name)
+          } else {
+            window.location.reload()
+          }
+        }
+      })
 
     });
   }
@@ -229,6 +237,7 @@ $pageName = "Employees List";
         customClass: {
           htmlContainer: 'swal-custom-container',
         },
+        allowOutsideClick: false,
         preConfirm: () => {
           if (!$(`#selected_rating_${id}`).val()) {
             swal.showValidationMessage(`Please select rating`);

@@ -498,8 +498,24 @@ function application_status_save()
   if ($updateJobStatus) {
     $response["success"] = true;
 
+    $candidateData = $helpers->select_all_individual("candidates", "id='$candidate_id'");
+    $jobData = $helpers->select_all_individual("job", "id='$candidateData->job_id'");
+    $companyData = $helpers->select_all_individual("company", "id='$jobData->company_id'");
+
+    $data = array(
+      "user_id" => $candidateData->user_id,
+      "job_title" => $jobData->title,
+      "company_id" => $jobData->company_id,
+      "industry_id" => $companyData->industry_id,
+    );
+
     if ($action == "Hired") {
       $response["message"] = "Applicant successfully hired";
+
+      $data["work_from"] = date("F Y");
+      $data["work_to"] = "Present";
+
+      func_add_work_experience($data);
     } else if ($action == "Not selected by employer") {
       $response["message"] = "Applicant successfully set to Not Selected";
     } else if ($action == "Withdrawn") {
@@ -509,12 +525,51 @@ function application_status_save()
     } else if ($action == "Resigned") {
       $response["message"] = "Employee successfully resigned";
     }
+
+    if ($action == "Terminated" || $action == "Resigned") {
+
+      $response["id"] = $candidateData->user_id;
+      $response["name"] = $helpers->get_full_name($candidateData->user_id);
+
+      $data["work_to"] = date("F Y");
+
+      func_add_work_experience($data);
+    }
   } else {
     $response["success"] = false;
     $response["message"] = $conn->error;
   }
 
   $helpers->return_response($response);
+}
+
+function func_add_work_experience($postData)
+{
+  global $helpers;
+
+  $user_id = $postData["user_id"];
+  $job_title = $postData["job_title"];
+  $company_id = $postData["company_id"];
+  $industry_id = $postData["industry_id"];
+  $work_from = isset($postData["work_from"]) ? $postData["work_from"] : null;
+  $work_to = $postData["work_to"];
+
+  $workExp = $helpers->select_all_individual("work_experience", "user_id='$user_id' AND company_id='$company_id'");
+
+  $data = array(
+    "user_id" => $user_id,
+    "job_title" => $job_title,
+    "company_id" => $company_id,
+    "industry_id" => $industry_id,
+    "work_from" => $work_from,
+    "work_to" => $work_to
+  );
+
+  if ($workExp) {
+    $helpers->update("work_experience", $data, "id", $workExp->id);
+  } else {
+    $helpers->insert("work_experience", $data);
+  }
 }
 
 function set_interview()
@@ -1248,7 +1303,7 @@ function register_company()
         "industry_id" => $industry,
         "name" => $company_name,
         "company_logo" => $company_logo->success ? $company_logo->file_name : $url_company_logo,
-        "address" => $address,
+        "district" => $address,
         "description" => $description,
       );
 

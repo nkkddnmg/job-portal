@@ -6,7 +6,7 @@ if (!isset($_SESSION["id"])) {
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
-$pageName = "Verified Companies";
+$pageName = "Company Verification";
 ?>
 <!DOCTYPE html>
 
@@ -56,9 +56,9 @@ $pageName = "Verified Companies";
 
                     if (count($companies) > 0) :
                       foreach ($companies as $company) :
-                        $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id' ");
+                        $verificationData = $helpers->select_all_individual("verification", "id='$company->verification_id'");
 
-                        if (!$verificationData || $verificationData && $verificationData->status == "denied") continue;
+                        if (!$verificationData || $verificationData && $verificationData->status != "pending") continue;
 
                         $modal_id = "company-img-modal_$company->id";
                         $img_id = "company-image_$company->id";
@@ -87,7 +87,6 @@ $pageName = "Verified Companies";
                             <?php else : ?>
                               <span class="badge bg-label-danger me-1">No Verification</span>
                             <?php endif; ?>
-
                           </td>
                           <td><?= date("m-d-Y", strtotime($company->date_created)) ?></td>
                           <td>

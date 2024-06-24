@@ -91,6 +91,11 @@ $pageName = "Posted Jobs";
                                 <button type="button" class="dropdown-item" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-job?id=$job->id" ?>`)'>
                                   Preview
                                 </button>
+
+                                <a href="<?= SERVER_NAME . "/views/candidates-list?id=$job->id" ?>" class="dropdown-item">
+                                  List of Candidates
+                                </a>
+
                                 <?php if ($job->status == "active") : ?>
                                   <a class="dropdown-item" href="<?= SERVER_NAME . "/views/potential-candidates?id=$job->id" ?>">
                                     Show Potential Candidates

@@ -100,7 +100,7 @@
                   </button>
                 </div>
 
-                <?php if (count($educations) > 0) : ?>
+                <?php if (!isset($_GET["ref"]) || count($educations) > 0) : ?>
                   <div class="col-md-12 mt-2">
                     <a href="<?= SERVER_NAME . "/views/work-experience?t=$_GET[t]" ?>" class="btn btn-secondary d-grid w-100">
                       Next
@@ -108,9 +108,7 @@
                   </div>
                 <?php endif; ?>
               </div>
-
             </form>
-
           </div>
         </div>
       </div>
@@ -121,7 +119,17 @@
 <?php include("../components/footer.php") ?>
 
 <script>
-  const handleCancel = () => window.location.href = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
+  const handleCancel = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    let location = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
+
+    if (searchParams.has("ref")) {
+      location = searchParams.get("ref")
+    }
+
+    window.location.href = location
+  };
 
   function handleRemoveEducation(id) {
     const postData = {

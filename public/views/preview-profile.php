@@ -52,6 +52,12 @@
               Skills
             </a>
           </li>
+
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="ratings-tab" data-toggle="tab" href="#ratings" type="button" role="tab" aria-controls="skills" aria-selected="false">
+              Ratings
+            </a>
+          </li>
         </ul>
         <hr>
 
@@ -66,47 +72,39 @@
 
               <div class="card-body p-4">
                 <form id="form-update-profile" method="POST">
-                  <input type="text" name="id" value="<?= $userData->id ?>" readonly hidden>
                   <div class="row">
                     <div class="form-group mb-3 col-md-6">
-                      <label for="fname" class="form-label">First Name</label>
-                      <input class="form-control" type="text" id="fname" name="fname" value="<?= $userData->fname ?>" required />
+                      <label for="fname" class="form-label">First Name: </label>
+                      <span class="text-dark"><?= $userData->fname ?></span>
                     </div>
                     <div class="form-group mb-3 col-md-6">
-                      <label for="mname" class="form-label">Middle Name</label>
-                      <input class="form-control" type="text" name="mname" id="mname" value="<?= $userData->mname ?>" />
+                      <label for="mname" class="form-label">Middle Name: </label>
+                      <span class="text-dark"><?= $userData->mname ?></span>
                     </div>
                     <div class="form-group mb-3 col-md-6">
-                      <label for="lname" class="form-label">Last Name</label>
-                      <input class="form-control" type="text" name="lname" id="lname" value="<?= $userData->lname ?>" required />
+                      <label for="lname" class="form-label">Last Name: </label>
+                      <span class="text-dark"><?= $userData->lname ?></span>
                     </div>
                     <div class="form-group mb-3 col-md-6">
-                      <label for="contact" class="form-label">Contact</label>
-                      <input class="form-control" type="text" name="contact" id="contact" value="<?= $userData->contact ?>" required />
+                      <label for="contact" class="form-label">Contact: </label>
+                      <span class="text-dark"><?= $userData->contact ?></span>
                     </div>
                     <div class="form-group mb-3 col-md-6">
-                      <label for="email" class="form-label">E-mail</label>
-                      <input class="form-control" type="text" id="email" name="email" value="<?= $userData->email ?>" required />
+                      <label for="email" class="form-label">E-mail: </label>
+                      <span class="text-dark"><?= $userData->email ?></span>
                     </div>
                     <div class="form-group mb-3 col-md-6">
-                      <label for="address" class="form-label">Address</label>
-                      <input class="form-control" type="text" id="address" name="address" value="<?= $userData->address ?>" required />
+                      <label for="address" class="form-label">Address: </label>
+                      <span class="text-dark"><?= $userData->address ?></span>
                     </div>
                     <div class="form-group mb-3 col-md-6">
-                      <label for="district" class="form-label">District</label>
-
-                      <select class="form-control" name="district" id="district" required>
-                        <option value="">-- select district --</option>
-                        <?php foreach ($helpers->districtList as $district) : ?>
-                          <option value="<?= $district ?>" <?= $helpers->is_selected($district, $userData->district) ?>><?= $district ?></option>
-                        <?php endforeach; ?>
-                      </select>
+                      <label for="address" class="form-label">District: </label>
+                      <span class="text-dark"><?= $userData->district ?></span>
                     </div>
                   </div>
                 </form>
               </div>
 
-              <?php include("../components/ratings.php"); ?>
               <!-- /Account -->
             </div>
           </div>
@@ -236,6 +234,14 @@
                     No Skills
                   </h3>
                 <?php endif; ?>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="ratings" role="tabpanel" aria-labelledby="ratings-tab">
+            <div class="row d-flex justify-content-center">
+              <div class="col-md-12">
+                <?php include("../components/ratings.php"); ?>
               </div>
             </div>
           </div>

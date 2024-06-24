@@ -38,7 +38,7 @@ $job_preference = $helpers->select_all_individual("job_preference", "user_id='$i
   <div class="col-1">
     <i class='bx bxs-briefcase'></i>
   </div>
-  <div class="col-9">Job types</div>
+  <div class="col-9">Work Setup</div>
   <?php if (isset($_GET["t"])) : ?>
     <div class="col-2">
       <a href="javascript:void(0)">

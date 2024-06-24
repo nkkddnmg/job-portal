@@ -170,7 +170,7 @@ if (isset($_SESSION["id"])) {
               <p class="mb-0 text-white lead">We Help To Get The Best Job And Find A Talent.</p>
             </div>
             <div class="col-md-3 ml-auto">
-              <a href="<?= SERVER_NAME . "/views/sign-up" ?>" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+              <a href="javascript:void(0)" onclick="navigateSIgnUp()" class="btn btn-warning btn-block btn-lg">Sign Up</a>
             </div>
           </div>
         </div>

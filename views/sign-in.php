@@ -49,7 +49,7 @@
 
             <p class="text-center">
               <span>New on our platform?</span>
-              <a href=" <?= SERVER_NAME . "/views/sign-up" ?>">
+              <a href="javascript:void(0)" onclick="navigateSIgnUp()">
                 <span>Create an account</span>
               </a>
             </p>

@@ -43,6 +43,14 @@ class Helpers
         //   )
         // ),
         array(
+          "title" => "Dashboard",
+          "config" => array(
+            "icon" => "bx bxs-dashboard",
+            "url" => (SERVER_NAME . "/views/admin/dashboard"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
           "title" => "Users",
           "config" => array(
             "icon" => "bx bxs-group",
@@ -63,27 +71,11 @@ class Helpers
             )
           )
         ),
-        // array(
-        //   "title" => "Verifications",
-        //   "config" => array(
-        //     "icon" => "bx bxs-shield-x",
-        //     "url" => (SERVER_NAME . "/views/admin/company-verification"),
-        //     "is_dropdown" => false
-        //   )
-        // ),
         array(
           "title" => "Companies",
           "config" => array(
             "icon" => "bx bxs-buildings",
             "url" => (SERVER_NAME . "/views/admin/companies"),
-            "is_dropdown" => false
-          )
-        ),
-        array(
-          "title" => "Industries",
-          "config" => array(
-            "icon" => "bx bxs-factory",
-            "url" => (SERVER_NAME . "/views/admin/industries"),
             "is_dropdown" => false
           )
         ),
@@ -95,7 +87,30 @@ class Helpers
             "is_dropdown" => false
           )
         ),
-
+        array(
+          "title" => "Pending Verifications",
+          "config" => array(
+            "icon" => "bx bxs-shield",
+            "url" => (SERVER_NAME . "/views/admin/pending-verification"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "No Verifications",
+          "config" => array(
+            "icon" => "bx bxs-shield-x",
+            "url" => (SERVER_NAME . "/views/admin/no-verification"),
+            "is_dropdown" => false
+          )
+        ),
+        array(
+          "title" => "Industries",
+          "config" => array(
+            "icon" => "bx bxs-factory",
+            "url" => (SERVER_NAME . "/views/admin/industries"),
+            "is_dropdown" => false
+          )
+        ),
       );
     } else if ($user == "employer") {
       $links = array(
@@ -451,7 +466,7 @@ class Helpers
           if ($query) {
             return $this->conn->insert_id;
           } else {
-            $error =  $this->con->error;
+            $error =  $this->conn->error;
           }
         }
 

@@ -68,16 +68,11 @@
               <input type="text" name="role" id="inputRole" hidden>
               <div class="row" id="divButtons">
                 <div class="col-md-6 mt-2">
-                  <button class="btn btn-primary w-100" type="button" onclick="handleSubmit('applicant')">
-                    Applicant
+                  <button class="btn btn-primary w-100" type="button" onclick="handleSubmit(`<?= $_GET['role'] ?>`)">
+                    Submit
                   </button>
                 </div>
                 <div class="col-md-6 mt-2">
-                  <button class="btn btn-outline-primary w-100" type="button" onclick="handleSubmit('employer')">
-                    Employer
-                  </button>
-                </div>
-                <div class="col-md-12 mt-2">
                   <button type="button" class="btn btn-secondary w-100" onclick="handleGoBackToPublicPage()">
                     Cancel
                   </button>
