@@ -148,14 +148,6 @@ if (isset($_SESSION["id"])) {
             }
           }
 
-          $jobList = $helpers->custom_query("SELECT j.*, c.district FROM job j LEFT JOIN company c ON c.id=j.company_id WHERE j.status <> 'inactive';");
-
-          foreach ($jobList as $job) {
-            if ($job->district == $LOGIN_USER->district) {
-              array_push($jobIds, $job->id);
-            }
-          }
-
           $jobPreferences = $helpers->select_all_with_params("job_preference", "user_id='$LOGIN_USER->id'");
 
           foreach ($jobPreferences as $jobPreference) {
@@ -208,6 +200,14 @@ if (isset($_SESSION["id"])) {
                 $jobs = $helpers->select_all_with_params("job", "LOWER(location_type) LIKE LOWER('%$locationType%') AND status='active'");
                 handleAddIds($jobs);
               }
+            }
+          }
+
+          $jobList = $helpers->custom_query("SELECT j.*, c.district FROM job j LEFT JOIN company c ON c.id=j.company_id WHERE j.status <> 'inactive';");
+
+          foreach ($jobList as $job) {
+            if ($job->district == $LOGIN_USER->district) {
+              array_push($jobIds, $job->id);
             }
           }
 
