@@ -31,6 +31,16 @@
                 </div>
 
                 <div class="mb-3 form-group">
+                  <label for="contact" class="form-label">Contact</label>
+                  <input class="form-control" type="text" id="contact" name="contact" required>
+                </div>
+
+                <div class="mb-3 form-group">
+                  <label for="email" class="form-label">Email</label>
+                  <input class="form-control" type="text" id="email" name="email" required>
+                </div>
+
+                <div class="mb-3 form-group">
                   <?= $helpers->generate_image_upload(
                     "divCompanyLogo",
                     "<label class='form-label'>Company Logo </label>",
@@ -41,7 +51,12 @@
 
                 <div class="mb-3 form-group">
                   <label for="address" class="form-label">Address</label>
-                  <select class="form-select" name="address" id="address" required>
+                  <input class="form-control" type="text" id="address" name="address" required />
+                </div>
+
+                <div class="mb-3 form-group">
+                  <label for="district" class="form-label">District</label>
+                  <select class="form-select" name="district" id="district" required>
                     <option value="">-- select address --</option>
                     <?php foreach ($helpers->districtList as $district) : ?>
                       <option value="<?= $district ?>"><?= $district ?></option>

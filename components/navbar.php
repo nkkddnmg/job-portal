@@ -7,12 +7,35 @@
 
   <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
     <!-- Search -->
-    <!-- <div class="navbar-nav align-items-center">
+    <div class="navbar-nav align-items-center">
       <div class="nav-item d-flex align-items-center">
-        <i class="bx bx-search fs-4 lh-0"></i>
-        <input type="text" class="form-control border-0 shadow-none" placeholder="Search..." aria-label="Search..." />
+        <?php
+        $forecastStr = "SELECT 
+                              com.name as 'company_name',
+                              COUNT(*) as 'count',
+                              c.date_separated
+                          FROM users u 
+                          INNER JOIN candidates c
+                          ON c.user_id = u.id
+                          LEFT JOIN job j
+                          ON j.id = c.job_id
+                          INNER JOIN company com
+                          ON com.id = j.company_id
+                          WHERE u.role = 'applicant'
+                          AND c.status = 'Resigned'
+                          GROUP BY com.name
+                          ORDER BY c.date_separated DESC
+                          LIMIT 1";
+
+        $forecastQ = $conn->query($forecastStr);
+
+        if ($forecastQ->num_rows > 0) :
+          $forecast = $forecastQ->fetch_object();
+        ?>
+          <span class="m-0"> <strong><?= $forecast->count ?></strong> expected vacancies in <strong><?= $forecast->company_name ?></strong> in the next few months</span>
+        <?php endif; ?>
       </div>
-    </div> -->
+    </div>
     <!-- /Search -->
 
     <ul class="navbar-nav flex-row align-items-center ms-auto">

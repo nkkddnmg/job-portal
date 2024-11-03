@@ -5,10 +5,10 @@ if ($_SERVER['HTTP_HOST'] == "localhost") {
   $password = "";
   $db = "job-portal";
 } else {
-  $host = "";
-  $user = "";
-  $password = "";
-  $db = "";
+  $host = "localhost";
+  $user = "job_user";
+  $password = "j)r[d-2~3!Qn";
+  $db = "job_portal";
 }
 
 try {

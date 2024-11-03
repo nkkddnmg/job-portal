@@ -22,9 +22,11 @@ class Helpers
     $this->session = $session;
 
     if ($_SERVER['HTTP_HOST'] == "localhost") {
-      define("SERVER_NAME", "http://$_SERVER[SERVER_NAME]/job-portal");
+      define("SERVER_NAME", "https://$_SERVER[SERVER_NAME]/job-portal");
+    } else if (str_contains($_SERVER['HTTP_HOST'], "ngrok-free.app")) {
+      define("SERVER_NAME", "https://$_SERVER[SERVER_NAME]/job-portal");
     } else {
-      define("SERVER_NAME", "http://$_SERVER[SERVER_NAME]");
+      define("SERVER_NAME", "https://$_SERVER[SERVER_NAME]");
     }
   }
 
@@ -56,10 +58,10 @@ class Helpers
             "icon" => "bx bxs-group",
             "is_dropdown" => true,
             "dropdown_data" => array(
-              // array(
-              //   "title" => "Admins",
-              //   "url" => (SERVER_NAME . "/views/admin/admins")
-              // ),
+              array(
+                "title" => "Hired",
+                "url" => (SERVER_NAME . "/views/admin/hired")
+              ),
               array(
                 "title" => "Employers",
                 "url" => (SERVER_NAME . "/views/admin/employers")

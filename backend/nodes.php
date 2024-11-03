@@ -3,13 +3,19 @@ session_start();
 date_default_timezone_set("Asia/Manila");
 
 include(__DIR__ . "/helpers.php");
-include(__DIR__ . "/ClassSendEmail.php");
 
 try {
-  $host = "localhost";
-  $user = "root";
-  $password = "";
-  $db = "job_portal";
+  if ($_SERVER['HTTP_HOST'] == "localhost") {
+    $host = "localhost";
+    $user = "root";
+    $password = "";
+    $db = "job_portal";
+  } else {
+    $host = "localhost";
+    $user = "job_user";
+    $password = "j)r[d-2~3!Qn";
+    $db = "job_portal";
+  }
 
   $conn = new mysqli($host, $user, $password, $db);
   $helpers = new Helpers($conn, $_SESSION);
@@ -150,6 +156,8 @@ try {
 
 function sendEmail($email, $body, $name, $subject)
 {
+  include(__DIR__ . "/ClassSendEmail.php");
+
   $sendSmtp = new SendEmail($email, $body, $name, $subject);
 
   $success = $sendSmtp->response["success"];
@@ -212,7 +220,9 @@ function add_rating()
 
   $rated_by = $_SESSION["id"];
   $applicantId = $_POST["applicantId"];
-  $rating = $_POST["rating"];
+  $soft_skills = $_POST["soft_skills"];
+  $communication = $_POST["communication"];
+  $flexibility = $_POST["flexibility"];
   $feedback = $_POST["feedback"];
 
   $comm = null;
@@ -221,13 +231,15 @@ function add_rating()
   $rateRes = $helpers->select_all_individual("ratings", "user_id='$applicantId' AND rated_by='$rated_by'");
 
   if ($rateRes) {
-    $comm = $conn->query("UPDATE ratings SET stars='$rating', feedback='$feedback' WHERE user_id='$applicantId' AND rated_by='$rated_by'");
+    $comm = $conn->query("UPDATE ratings SET soft_skills='$soft_skills', communication='$communication', flexibility='$flexibility', feedback='$feedback' WHERE user_id='$applicantId' AND rated_by='$rated_by'");
     $action = "updated";
   } else {
     $rateData = array(
       "user_id" =>  $applicantId,
       "rated_by" => $rated_by,
-      "stars" => $rating,
+      "soft_skills" => $soft_skills,
+      "communication" => $communication,
+      "flexibility" => $flexibility,
       "feedback" => $feedback,
     );
     $comm = $helpers->insert("ratings", $rateData);
@@ -578,12 +590,47 @@ function set_interview()
 
   $candidate_id = $_POST["candidate_id"];
 
+  $applicant_data = $helpers->get_user_by_id($_POST["applicant_id"]);
+  $job_data = $helpers->select_all_individual("job", "id='$_POST[job_id]'");
+  $company_data = $helpers->select_all_individual("company", "id='$job_data->company_id'");
+
+  $job_title = $job_data->title;
+  $company_name = $company_data->name;
+
   $interview_date = $_POST["interview_date"];
+  $setup = $_POST["setup"];
   $time_from = $_POST["time_from"];
   $time_to = $_POST["time_to"];
 
+  $subject = "";
+  $html_body = "";
+
+  if ($setup == "On site") {
+    $location = "$company_data->address $company_data->district";
+    $html_body = file_get_contents("./onsite-interview-email-template.html");
+    $html_body = str_replace('%location%', $location, $html_body);
+
+    $subject = "On-Site Interview Invitation for $job_title Position at $company_name";
+  } else {
+    $html_body = file_get_contents("./online-interview-email-template.html");
+
+    $subject = "Invitation to Interview for $job_title at $company_name";
+  }
+
+  if (!empty($html_body)) {
+    $html_body = str_replace('%name%', $helpers->get_full_name($applicant_data->id), $html_body);
+    $html_body = str_replace('%job_title%', $job_title, $html_body);
+    $html_body = str_replace('%company_name%', $company_name, $html_body);
+    $html_body = str_replace('%date%', date("F d, Y", strtotime($interview_date)), $html_body);
+    $html_body = str_replace('%time%', date("h:i A", strtotime($time_from)) . " - " . date("h:i A", strtotime($time_to)), $html_body);
+
+    // sendEmail($applicant_data->email, $html_body, $helpers->get_full_name($applicant_data->id), $subject);
+    sendEmail("montemarjohn66@gmail.com", $html_body, $helpers->get_full_name($applicant_data->id), $subject);
+  }
+
   $candidateData = array(
     "status" => "Interviewing",
+    "setup" => $setup,
     "interview_date" => "$interview_date",
     "interview_time" => "$time_from - $time_to"
   );
@@ -1132,7 +1179,10 @@ function company_save()
 
   $company_id = $_POST["company_id"];
   $name = $_POST["name"];
+  $contact = $_POST["contact"];
+  $email = $_POST["email"];
   $companyAddress = $_POST["companyAddress"];
+  $companyDistrict = $_POST["companyDistrict"];
   $industry_id = $_POST["industry"];
   $description = $_POST["description"];
   $input_business_permit = $_FILES["input_business_permit"];
@@ -1145,7 +1195,10 @@ function company_save()
 
     $updateData = array(
       "name" => $name,
-      "district" => $companyAddress,
+      "contact" => $contact,
+      "email" => $email,
+      "address" => $companyAddress,
+      "district" => $companyDistrict,
       "description" => nl2br($description),
       "industry_id" => $industry_id
     );
@@ -1268,6 +1321,9 @@ function register_company()
   $input_company_id = $_POST["company_id"];
 
   $company_name = $_POST["company_name"];
+  $contact = $_POST["contact"];
+  $email = $_POST["email"];
+  $district = $_POST["district"];
   $address = $_POST["address"];
   $industry = $_POST["industry"];
   $description = nl2br($_POST["description"]);
@@ -1302,8 +1358,11 @@ function register_company()
         "verification_id" => $verification_id,
         "industry_id" => $industry,
         "name" => $company_name,
+        "contact" => $contact,
+        "email" => $email,
         "company_logo" => $company_logo->success ? $company_logo->file_name : $url_company_logo,
-        "district" => $address,
+        "address" => $address,
+        "district" => $district,
         "description" => $description,
       );
 

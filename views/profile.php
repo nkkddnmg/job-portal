@@ -187,6 +187,9 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                       $companyImgLink = "";
                       $companyID = "";
                       $companyName = "";
+                      $companyContact = "";
+                      $companyEmail = "";
+                      $companyAddress = "";
                       $companyDistrict = "";
                       $industry = "";
                       $description = "";
@@ -200,7 +203,10 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                           $companyID = $getCompanyData->id;
 
                           $companyName = $getCompanyData->name;
-                          $companyAddress = $getCompanyData->district;
+                          $companyContact = $getCompanyData->contact;
+                          $companyEmail = $getCompanyData->email;
+                          $companyAddress = $getCompanyData->address;
+                          $companyDistrict = $getCompanyData->district;
                           $industryID = $getCompanyData->industry_id;
                           $description = nl2br($getCompanyData->description);
 
@@ -246,13 +252,19 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                                 <label for="name" class="form-label">Name</label>
                                 <input class="form-control" type="text" id="name" name="name" value="<?= $companyName ?>" required />
                               </div>
+
                               <div class="form-group mb-3 col-md-4">
                                 <label for="companyAddress" class="form-label">Address</label>
+                                <input class="form-control" type="text" id="companyAddress" name="companyAddress" value="<?= $companyAddress ?>" required />
+                              </div>
 
-                                <select class="form-select" name="companyAddress" id="companyAddress" required>
+                              <div class="form-group mb-3 col-md-4">
+                                <label for="companyDistrict" class="form-label">District</label>
+
+                                <select class="form-select" name="companyDistrict" id="companyDistrict" required>
                                   <option value="">-- select address --</option>
                                   <?php foreach ($helpers->districtList as $district) : ?>
-                                    <option value="<?= $district ?>" <?= $helpers->is_selected($district, $companyAddress) ?>><?= $district ?></option>
+                                    <option value="<?= $district ?>" <?= $helpers->is_selected($district, $companyDistrict) ?>><?= $district ?></option>
                                   <?php endforeach; ?>
                                 </select>
                               </div>
@@ -270,6 +282,14 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                                   endforeach;
                                   ?>
                                 </select>
+                              </div>
+                              <div class="form-group mb-3 col-md-4">
+                                <label for="contact" class="form-label">Contact</label>
+                                <input class="form-control" type="text" id="contact" name="contact" value="<?= $companyContact ?>" required />
+                              </div>
+                              <div class="form-group mb-3 col-md-4">
+                                <label for="email" class="form-label">Email</label>
+                                <input class="form-control" type="email" id="email" name="email" value="<?= $companyEmail ?>" required />
                               </div>
                               <div class="form-group mb-3 col-md-12">
                                 <label for="description" class="form-label">Description</label>

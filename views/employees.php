@@ -197,30 +197,78 @@ $pageName = "Employees List";
     getRateData(id).then((d) => {
       const rateData = $.parseJSON(d)
 
-      let btnStars = "";
+      let btnSoftSkillsStars = "";
+      let btnCommunicationStars = "";
+      let btnFlexibilityStars = "";
 
       for (let i = 1; i <= 5; i++) {
-        let btnWarning = "";
+        let softSkillWarning = rateData && Number(rateData.soft_skills) >= i ? "btn-warning" : "";
+        let softCommWarning = rateData && Number(rateData.communication) >= i ? "btn-warning" : "";
+        let softFlexWarning = rateData && Number(rateData.flexibility) >= i ? "btn-warning" : "";
 
-        if (rateData && Number(rateData.stars) >= i) {
-          btnWarning = "btn-warning";
-        }
-
-        btnStars += `
-                <button type="button" class="btn-rating-${id} btn btn-outline-secondary btn-lg mx-2 ${btnWarning}" data-attr="${i}" id="${id}-rating-star-${i}">
+        btnSoftSkillsStars += `
+                <button type="button" class="btn-soft-skills-${id} btn btn-outline-secondary btn-lg mx-1 ${softSkillWarning}" data-attr="${i}" id="${id}-soft-skills-star-${i}">
                   <i class="bx bxs-star" aria-hidden="true"></i>
-                </button>`
+                </button>`;
+
+        btnCommunicationStars += `
+                <button type="button" class="btn-communication-${id} btn btn-outline-secondary btn-lg mx-1 ${softCommWarning}" data-attr="${i}" id="${id}-communication-star-${i}">
+                  <i class="bx bxs-star" aria-hidden="true"></i>
+                </button>`;
+
+        btnFlexibilityStars += `
+                <button type="button" class="btn-flexibility-${id} btn btn-outline-secondary btn-lg mx-1 ${softFlexWarning}" data-attr="${i}" id="${id}-flexibility-star-${i}">
+                  <i class="bx bxs-star" aria-hidden="true"></i>
+                </button>`;
+
       }
 
       const rateHtml = `
             <input type="text" id="applicant_id_${id}" value="${id}" readonly hidden>
             <div class="row">
               <div class="form-group text-center mb-3" id="rating-ability-wrapper">
-                <input type="text" id="selected_rating_${id}" value="${rateData ? rateData.stars : ""}" name="rating" hidden>
-                <h2 class="bold rating-header">
-                  <span class="selected-rating-${id}">${rateData ? rateData.stars : "0"}</span><small> / 5</small>
-                </h2>
-                ${btnStars}
+                <div class="text-start w-100">
+                  <strong>Soft Skills</strong>
+
+                  <div class="mt-2">
+                    ${btnSoftSkillsStars}
+                    <small class="bold rating-header">
+                      <span class="soft-skills-rating-${id}">${rateData ? rateData.soft_skills : "0"}</span><small> / 5</small>
+                    </small>
+                  </div>
+                </div>
+                
+                <input type="text" id="soft_skills${id}" value="${rateData ? rateData.soft_skills : ""}" name="soft_skill" hidden>
+              </div>
+
+              <div class="form-group text-center mb-3" id="rating-ability-wrapper">
+                <div class="text-start w-100">
+                  <strong>Communication</strong>
+
+                  <div class="mt-2">
+                    ${btnCommunicationStars}
+                    <small class="bold rating-header">
+                      <span class="communication-rating-${id}">${rateData ? rateData.communication : "0"}</span><small> / 5</small>
+                    </small>
+                  </div>
+                </div>
+                
+                <input type="text" id="communication${id}" value="${rateData ? rateData.communication : ""}" name="communication" hidden>
+              </div>
+
+              <div class="form-group text-center mb-3" id="rating-ability-wrapper">
+                <div class="text-start w-100">
+                  <strong>Soft Skills</strong>
+
+                  <div class="mt-2">
+                    ${btnFlexibilityStars}
+                    <small class="bold rating-header">
+                      <span class="flexibility-rating-${id}">${rateData ? rateData.flexibility : "0"}</span><small> / 5</small>
+                    </small>
+                  </div>
+                </div>
+                
+                <input type="text" id="flexibility${id}" value="${rateData ? rateData.flexibility : ""}" name="flexibility" hidden>
               </div>
             </div>
             <div class="form-group mb-3">
@@ -239,7 +287,7 @@ $pageName = "Employees List";
         },
         allowOutsideClick: false,
         preConfirm: () => {
-          if (!$(`#selected_rating_${id}`).val()) {
+          if (!$(`#soft_skills${id}`).val() || !$(`#communication${id}`).val() || !$(`#flexibility${id}`).val()) {
             swal.showValidationMessage(`Please select rating`);
           } else if (!$(`#feedback_${id}`).val()) {
             swal.showValidationMessage(`Please add feedback`);
@@ -253,13 +301,17 @@ $pageName = "Employees List";
 
         if (d.isConfirmed) {
           const applicantId = $(`#applicant_id_${id}`).val()
-          const rating = $(`#selected_rating_${id}`).val()
+          const softSkills = $(`#soft_skills${id}`).val()
+          const communication = $(`#communication${id}`).val()
+          const flexibility = $(`#flexibility${id}`).val()
           const feedback = $(`#feedback_${id}`).val()
 
           $.post(
             "<?= SERVER_NAME . "/backend/nodes?action=add_rating" ?>", {
               applicantId: applicantId,
-              rating: rating,
+              soft_skills: softSkills,
+              communication: communication,
+              flexibility: flexibility,
               feedback: feedback
             },
             (data, status) => {
@@ -275,22 +327,60 @@ $pageName = "Employees List";
         }
       })
 
-      $(`.btn-rating-${id}`).on('click', (function(e) {
+      $(`.btn-soft-skills-${id}`).on('click', (function(e) {
 
-        var previous_value = $(`#selected_rating_${id}`).val();
+        var previous_value = $(`#soft_skills${id}`).val();
 
         var selected_value = $(this).attr("data-attr");
-        $(`#selected_rating_${id}`).val(selected_value);
+        $(`#soft_skills${id}`).val(selected_value);
 
-        $(`.selected-rating-${id}`).empty();
-        $(`.selected-rating-${id}`).html(selected_value);
+        $(`.soft-skills-rating-${id}`).empty();
+        $(`.soft-skills-rating-${id}`).html(selected_value);
 
         for (i = 1; i <= selected_value; ++i) {
-          $(`#${id}-rating-star-${i}`).toggleClass('btn-warning');
+          $(`#${id}-soft-skills-star-${i}`).toggleClass('btn-warning');
         }
 
         for (ix = 1; ix <= previous_value; ++ix) {
-          $(`#${id}-rating-star-${ix}`).toggleClass('btn-warning');
+          $(`#${id}-soft-skills-star-${ix}`).toggleClass('btn-warning');
+        }
+      }));
+
+      $(`.btn-communication-${id}`).on('click', (function(e) {
+
+        var previous_value = $(`#communication${id}`).val();
+
+        var selected_value = $(this).attr("data-attr");
+        $(`#communication${id}`).val(selected_value);
+
+        $(`.communication-rating-${id}`).empty();
+        $(`.communication-rating-${id}`).html(selected_value);
+
+        for (i = 1; i <= selected_value; ++i) {
+          $(`#${id}-communication-star-${i}`).toggleClass('btn-warning');
+        }
+
+        for (ix = 1; ix <= previous_value; ++ix) {
+          $(`#${id}-communication-star-${ix}`).toggleClass('btn-warning');
+        }
+      }));
+
+      $(`.btn-flexibility-${id}`).on('click', (function(e) {
+
+        var previous_value = $(`#flexibility${id}`).val();
+
+        var selected_value = $(this).attr("data-attr");
+        $(`#flexibility${id}`).val(selected_value);
+
+        $(`.flexibility-rating-${id}`).empty();
+        $(`.flexibility-rating-${id}`).html(selected_value);
+
+        for (i = 1; i <= selected_value; ++i) {
+          $(`#${id}-flexibility-star-${i}`).toggleClass('btn-warning');
+        }
+
+        for (ix = 1; ix <= previous_value; ++ix) {
+          $(`#${id}-flexibility-star-${ix}`).toggleClass('btn-warning');
         }
       }));
     })

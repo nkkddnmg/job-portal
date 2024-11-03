@@ -65,7 +65,35 @@
 
           <div class="tab-pane fade show active" id="account-details" role="tabpanel" aria-labelledby="account-details-tab">
             <div class="card mb-4">
-              <h5 class="card-header">Profile Details</h5>
+              <div class="card-header">
+                <h5 class="card-title">Profile Details</h5>
+                <?php
+                $customQString = "SELECT 
+                                    u.id,
+                                    u.fname,
+                                    u.lname,
+                                    c.job_id,
+                                    c.status,
+                                    c.date_hired
+                                  FROM users u 
+                                  LEFT JOIN candidates c 
+                                  ON u.id = c.user_id
+                                  WHERE u.role='applicant'
+                                  AND c.status = 'Hired'
+                                  AND u.id = '$userData->id'";
+
+                $customQ = $conn->query($customQString);
+
+                if ($customQ->num_rows > 0) :
+                  $res = $customQ->fetch_object();
+                  $job_data = $helpers->select_all_individual("job", "id='$res->id'");
+                  $company_data = $helpers->select_all_individual("company", "id='$job_data->id'");
+                  if ($company_data) :
+                ?>
+                    Affiliated with <strong><?= "$company_data->name " . date("F Y", strtotime($res->date_hired)) ?></strong>
+                  <?php endif; ?>
+                <?php endif; ?>
+              </div>
 
               <!-- Account -->
               <?= $helpers->generate_avatar(false, $helpers->get_avatar_link($userData->id), $userData->id, false); ?>

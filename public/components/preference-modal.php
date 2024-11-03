@@ -129,7 +129,7 @@ $job_preference = $helpers->select_all_individual("job_preference", "user_id='$i
     <form class="modal-content" id="form-job-types" method="POST">
       <input type="text" name="token" value="<?= $_GET["t"] ?>" hidden readonly>
       <div class="modal-header">
-        <h4 class="modal-title" id="exampleModalLabel">Work Setup</h4>
+        <h4 class="modal-title" id="exampleModalLabel">Work Type</h4>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -404,7 +404,7 @@ $job_preference = $helpers->select_all_individual("job_preference", "user_id='$i
     <form class="modal-content" id="form-location-type" method="POST">
       <input type="text" name="token" value="<?= $_GET["t"] ?>" hidden readonly>
       <div class="modal-header">
-        <h4 class="modal-title" id="exampleModalLabel">Location types</h4>
+        <h4 class="modal-title" id="exampleModalLabel">Work Setup</h4>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">

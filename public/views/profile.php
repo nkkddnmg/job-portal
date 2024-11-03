@@ -69,6 +69,11 @@ if (isset($_SESSION["id"])) {
               Skills
             </a>
           </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="ratings-tab" data-toggle="tab" href="#ratings" type="button" role="tab" aria-controls="ratings" aria-selected="false">
+              Ratings
+            </a>
+          </li>
           <?php if (!isset($_GET["id"])) : ?>
             <li class="nav-item" role="presentation">
               <a class="nav-link" id="change-pass-tab" data-toggle="tab" href="#change-pass" type="button" role="tab" aria-controls="change-pass" aria-selected="false">
@@ -83,7 +88,36 @@ if (isset($_SESSION["id"])) {
 
           <div class="tab-pane fade show active" id="account-details" role="tabpanel" aria-labelledby="account-details-tab">
             <div class="card mb-4">
-              <h5 class="card-header">Profile Details</h5>
+              <div class="card-header">
+                <h5 class="card-title">Profile Details</h5>
+                <?php
+                $customQString = "SELECT 
+                                    u.id,
+                                    u.fname,
+                                    u.lname,
+                                    c.job_id,
+                                    c.status,
+                                    c.date_hired
+                                  FROM users u 
+                                  LEFT JOIN candidates c 
+                                  ON u.id = c.user_id
+                                  WHERE u.role='applicant'
+                                  AND c.status = 'Hired'
+                                  AND u.id = '$LOGIN_USER->id'";
+
+                $customQ = $conn->query($customQString);
+
+                if ($customQ->num_rows > 0) :
+                  $res = $customQ->fetch_object();
+                  $job_data = $helpers->select_all_individual("job", "id='$res->id'");
+                  $company_data = $helpers->select_all_individual("company", "id='$job_data->id'");
+
+                  if ($company_data):
+                ?>
+                    Affiliated with <strong><?= "$company_data->name " . date("F Y", strtotime($res->date_hired)) ?></strong>
+                  <?php endif; ?>
+                <?php endif; ?>
+              </div>
 
               <!-- Account -->
               <?= $helpers->generate_avatar(true, $helpers->get_avatar_link($LOGIN_USER->id), $LOGIN_USER->id, false); ?>
@@ -137,7 +171,7 @@ if (isset($_SESSION["id"])) {
                 </form>
               </div>
 
-              <?php include("../components/ratings.php"); ?>
+
             </div>
           </div>
 
@@ -343,6 +377,18 @@ if (isset($_SESSION["id"])) {
                       <?php endif; ?>
                     </form>
 
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="ratings" role="tabpanel" aria-labelledby="ratings-tab">
+            <div class="row justify-content-center">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-body">
+                    <?php include("../components/ratings.php"); ?>
                   </div>
                 </div>
               </div>

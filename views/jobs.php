@@ -59,8 +59,9 @@ $pageName = "Posted Jobs";
                     <tr>
                       <th>Title</th>
                       <th>Job Type</th>
-                      <th class="text-start">Date Posted</th>
                       <th>Status</th>
+                      <th class="text-start">List of Candidates</th>
+                      <th class="text-start">Potential Candidates</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -70,13 +71,79 @@ $pageName = "Posted Jobs";
                     if (count($jobs) > 0) :
                       foreach ($jobs as $job) :
 
+                        $potentialUserIds = array();
+
+                        $post_qualification = array();
+                        $post_experience = array();
+
+                        if ($job->qualifications) $post_qualification = json_decode($job->qualifications, true);
+                        if ($job->experience) $post_experience = json_decode($job->experience, true);
+
+                        $qualificationArray = array_merge($post_qualification, $post_experience);
+
+                        $qualifications = array();
+
+                        $job_qualifications = $helpers->select_all_with_params("experience_list", "id IN (" . (implode(', ', $qualificationArray)) . ")");
+
+                        foreach ($job_qualifications as $job_qualification) {
+                          array_push($qualifications, $job_qualification->name);
+                        }
+
+                        foreach ($qualifications as $qualification) {
+                          if ($qualification == "No Experience Needed") {
+                            $getUserNoExp = $helpers->custom_query("SELECT u.*, we.user_id FROM users u LEFT JOIN work_experience we ON we.user_id=u.id WHERE we.id IS NULL AND u.role = 'applicant'");
+
+                            if (count($getUserNoExp) > 0) {
+                              foreach ($getUserNoExp as $userNoExp) {
+                                array_push($potentialUserIds, $userNoExp->id);
+                              }
+                            }
+                          } else {
+                            $potentialQ = $helpers->select_all_with_params("work_experience", "LOWER(job_title) LIKE LOWER('$qualification')");
+
+                            foreach ($potentialQ as $potential) {
+                              if (!in_array($potential->user_id, $potentialUserIds)) {
+                                array_push($potentialUserIds, $potential->user_id);
+                              }
+                            }
+                          }
+                        }
+
+                        $company = $helpers->select_all_individual("company", "id='$job->company_id'");
+
+                        $userInSameDistricts = $helpers->select_all_with_params("users", "role = 'applicant' AND district LIKE '%$company->district%'");
+
+                        if (count($userInSameDistricts) > 0) {
+                          foreach ($userInSameDistricts as $userIsSameDistrict) {
+                            array_push($potentialUserIds, $userIsSameDistrict->id);
+                          }
+                        }
+
+                        $uniqueUserIds = array_unique($potentialUserIds);
+
                         $btnDropDownId = "btn-dropdown-$job->id";
+
+                        $candidateCount = count($helpers->select_all_with_params("candidates", "job_id='$job->id' AND status='Applied' AND user_id IS NOT NULL"));
+                        $potentialCount = count($uniqueUserIds);
                     ?>
                         <tr>
                           <td><?= $job->title ?></td>
                           <td><?= $job->type ?></td>
-                          <td class="text-start"><?= date("Y-m-d H:i:s", strtotime($job->date_created)) ?></td>
                           <td><?= ucfirst($job->status) ?></td>
+                          <td class="text-start">
+                            <a href="<?= SERVER_NAME . "/views/candidates-list?id=$job->id" ?>">
+                              <span class="badge rounded-pill bg-primary px-4">
+                                <?= $candidateCount ?>
+                              </span>
+                            </a>
+                          </td>
+                          <td class="text-start">
+                            <a href="<?= SERVER_NAME . "/views/potential-candidates?id=$job->id" ?>">
+                              <span class="badge rounded-pill bg-success px-4">
+                                <?= $potentialCount ?>
+                              </span>
+                            </a>
+                          </td>
                           <td>
                             <div class="dropdown">
 
@@ -92,14 +159,10 @@ $pageName = "Posted Jobs";
                                   Preview
                                 </button>
 
-                                <a href="<?= SERVER_NAME . "/views/candidates-list?id=$job->id" ?>" class="dropdown-item">
-                                  List of Candidates
-                                </a>
+
 
                                 <?php if ($job->status == "active") : ?>
-                                  <a class="dropdown-item" href="<?= SERVER_NAME . "/views/potential-candidates?id=$job->id" ?>">
-                                    Show Potential Candidates
-                                  </a>
+
                                   <button class="dropdown-item" type="button" onclick="handleSaveStatus('<?= $job->id ?>', 'inactive')">
                                     Set Inactive
                                   </button>

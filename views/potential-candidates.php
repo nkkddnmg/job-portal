@@ -34,6 +34,11 @@ $pageName = "Potential Candidates";
                   <span class="text-muted fw-light"><?= $pageName ?></span>
                 </h4>
               </div>
+              <div class="col-6 d-flex justify-content-end align-items-center">
+                <button type="button" class="btn btn-secondary" onclick="return window.history.back()" style="height: 38.94px;">
+                  Go Back
+                </button>
+              </div>
             </div>
 
             <div class="card">

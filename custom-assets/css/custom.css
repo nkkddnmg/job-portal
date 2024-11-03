@@ -132,3 +132,9 @@ img {
   width: 40px;
   height: 40px;
 }
+
+.scrollable-menu {
+  height: auto;
+  max-height: 250px;
+  overflow-x: hidden;
+}

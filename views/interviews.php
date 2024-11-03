@@ -44,6 +44,7 @@ $pageName = "Interviews";
                       <th>Title</th>
                       <th>Job Type</th>
                       <th>Applicant Name</th>
+                      <th>Setup</th>
                       <th class="text-start">Date Applied</th>
                       <th class="text-start">Interview Date</th>
                       <th class="text-start">Interview Time</th>
@@ -70,6 +71,7 @@ $pageName = "Interviews";
                             <td><?= $job->title ?></td>
                             <td><?= $job->type ?></td>
                             <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
+                            <td><?= $applicant->setup ?></td>
                             <td class="text-start"><?= date("Y-m-d H:i:s", strtotime($applicant->date_applied)) ?></td>
                             <td class="text-start"><?= date("Y-m-d", strtotime($applicant->interview_date)) ?></td>
                             <td><?= "$time_from - $time_to" ?></td>

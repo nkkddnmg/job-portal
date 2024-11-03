@@ -13,7 +13,19 @@ if (isset($_GET["t"])) {
   <div class="divRating">
     <div id="outputRating"></div>
     <p id="average"></p>
-    <div id="ratingChart" style="margin-top: -20px;"></div>
+    <div class="row">
+      <div class="col-8">
+        <div id="ratingChart" style="margin-top: -20px;"></div>
+      </div>
+      <div class="col-4">
+        <span style="font-size: 20px; margin-right: 25px;">Ratings by Category</span><br>
+        <div class="mt-2">
+          <span id="soft"></span> Soft Skills <br>
+          <span id="communication"></span> Communication <br>
+          <span id="flexibility"></span> Flexibility
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -28,18 +40,29 @@ if (count($ratings) > 0) :
 
     <?php foreach ($ratings as $rating) : ?>
       <div class="row mt-4">
-        <div class="col-2 text-center">
-          <h3><?= $rating->stars ?></h3>
-          <?php for ($i = 1; $i <= 5; $i++) :
-            if ($i <= $rating->stars) :
-          ?>
-              <span class="bx bxs-star" style="font-size: 15px;color: orange;"></span>
-            <?php else : ?>
-              <span class="bx bx-star" style="font-size: 15px;"></span>
-            <?php endif; ?>
-          <?php endfor; ?>
+        <div class="col-2 text-start pr-0">
+          <div class="">
+            <span style="font-size: 15px;">
+              <?= $rating->soft_skills ?>
+              <span class="bx bxs-star" style="margin-right: .5rem; color: orange;"></span>
+              <strong>Soft Skills</strong>
+            </span>
+            <br>
+            <span style="font-size: 15px;">
+              <?= $rating->communication ?>
+              <span class="bx bxs-star" style="margin-right: .5rem; color: orange;"></span>
+              <strong>Communication</strong>
+            </span>
+            <br>
+            <span style="font-size: 15px;">
+              <?= $rating->flexibility ?>
+              <span class="bx bxs-star" style="margin-right: .5rem; color: orange;"></span>
+              <strong>Flexibility</strong>
+            </span>
+            <br>
+          </div>
         </div>
-        <div class="col-10">
+        <div class="col-9">
           <small>Anonymous Employer - <?= date("F m, Y", strtotime($rating->date_created)) ?></small>
           <p class="mt-2">
             <?= nl2br($rating->feedback) ?>
@@ -62,47 +85,34 @@ if (count($ratings) > 0) :
     (data, status) => {
       const resp = JSON.parse(data);
 
-      let rating = [0, 0, 0, 0, 0]
-      resp.forEach((e) => {
-        switch (e.stars) {
-          case "1":
-            rating[0] += 1;
-            break;
-          case "2":
-            rating[1] += 1;
-            break;
-          case "3":
-            rating[2] += 1;
-            break;
-          case "4":
-            rating[3] += 1;
-            break;
-          case "5":
-            rating[4] += 1;
-            break;
-          default:
-            null;
-            break;
-        }
-      })
+      let rating = [
+        resp.filter((d) => d.soft_skills == 1 || d.communication == 1 || d.flexibility == 1).length,
+        resp.filter((d) => d.soft_skills == 2 || d.communication == 2 || d.flexibility == 2).length,
+        resp.filter((d) => d.soft_skills == 3 || d.communication == 3 || d.flexibility == 3).length,
+        resp.filter((d) => d.soft_skills == 4 || d.communication == 4 || d.flexibility == 4).length,
+        resp.filter((d) => d.soft_skills == 5 || d.communication == 5 || d.flexibility == 5).length,
+      ];
 
-      let average = 0;
-      for (let i = 0; i < rating.length; i++) {
-        average += (i + 1) * rating[i];
-      }
+      let rate = rating.map((d, i) => d * (i + 1))
 
-      let outputRating = `<span style="font-size: 25px; margin-right: 25px;">Ratings </span><br>`;
+      let avg = Math.ceil(rate.reduce((a, b) => a + b, 0) / resp.length)
+      let average = avg > 5 ? 5 : avg
 
-      for (let i = 0; i < 5; i++) {
-        if (i < Math.ceil(Number(average))) {
-          outputRating += (`<span class="bx bxs-star" style="font-size: 20px; margin-right: 10px;color: orange;"></span>`)
-        } else {
-          outputRating += (`<span class="bx bx-star" style="font-size: 20px; margin-right: 10px;"></span>`)
-        }
-      }
+      let outputRating = `<span style="font-size: 25px; margin-right: 25px;">Overall Ratings </span><br>`;
 
-      $("#outputRating").html(outputRating)
-      $("#average").html(`${average} average based on ${resp.length} reviews.`)
+      outputRating += generateStar(average)
+
+      $("#outputRating").html(outputRating);
+      $("#average").html(`${isNaN(average) ? 0 : average} average based on ${resp.length} reviews.`)
+
+      const softAvg = (resp.reduce((a, b) => a + Number(b.soft_skills), 0) / resp.length)
+      const commAvg = (resp.reduce((a, b) => a + Number(b.communication), 0) / resp.length)
+      const flexAvg = (resp.reduce((a, b) => a + Number(b.flexibility), 0) / resp.length)
+
+      $("#soft").html(`${isNaN(softAvg) ? 0 : softAvg} <span class="bx bxs-star" style="font-size: 20px; margin-right: 10px;color: orange;"></span>`)
+      $("#communication").html(`${isNaN(commAvg) ? 0 : commAvg} <span class="bx bxs-star" style="font-size: 20px; margin-right: 10px;color: orange;"></span>`)
+      $("#flexibility").html(`${isNaN(flexAvg) ? 0 : flexAvg} <span class="bx bxs-star" style="font-size: 20px; margin-right: 10px;color: orange;"></span>`)
+
 
       var options = {
         series: [{
@@ -135,12 +145,13 @@ if (count($ratings) > 0) :
         },
         xaxis: {
           categories: [
-            "5 stars",
-            "4 stars",
-            "3 stars",
-            "2 stars",
             "1 star",
+            "2 stars",
+            "3 stars",
+            "4 stars",
+            "5 stars",
           ],
+
         },
         tooltip: {
           x: {
@@ -160,4 +171,17 @@ if (count($ratings) > 0) :
       chart.render();
       $(".apexcharts-toolbar").hide();
     })
+
+  function generateStar(avg) {
+    let output = "";
+    for (let i = 0; i < 5; i++) {
+      if (i < Math.ceil(Number(avg))) {
+        output += (`<span class="bx bxs-star" style="font-size: 20px; margin-right: 10px;color: orange;"></span>`)
+      } else {
+        output += (`<span class="bx bx-star" style="font-size: 20px; margin-right: 10px;"></span>`)
+      }
+    }
+
+    return output
+  }
 </script>

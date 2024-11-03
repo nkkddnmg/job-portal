@@ -27,9 +27,124 @@ $pageName = "Dashboard";
 
         <div class="content-wrapper">
           <div class="container-xxl flex-grow-1 container-p-y">
-            <div class="card">
+            <div class="row">
+              <div class="col-md-3">
+                <div class="card">
+                  <div class="card-body">
+                    <?php
+                    $applicantStr = "SELECT 
+                                        u.id,
+                                        u.fname,
+                                        u.lname
+                                    FROM users u 
+                                    WHERE u.role = 'applicant'
+                                    AND u.id NOT IN(SELECT c.user_id FROM candidates c WHERE c.status = 'Hired')";
+
+                    $applicantQ = $conn->query($applicantStr);
+                    ?>
+                    <span class="fw-semibold d-block mb-1">Applicants</span>
+                    <h3 class="card-title mb-2 text-center"><?= $applicantQ->num_rows ?></h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card">
+                  <div class="card-body">
+                    <?php
+                    $pendingString = "SELECT 
+                                      c.verification_id,
+                                      c.name,
+                                      v.status
+                                      FROM company c
+                                      INNER JOIN verification v 
+                                      ON c.verification_id = v.id
+                                      WHERE v.status = 'pending'";
+
+                    $pendingCompany = $conn->query($pendingString);
+                    ?>
+                    <span class="fw-semibold d-block mb-1">Pending Company Verification</span>
+                    <h3 class="card-title mb-2 text-center"><?= $pendingCompany->num_rows ?></h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card">
+                  <div class="card-body">
+                    <?php
+                    $employeesString = "SELECT 
+                                          u.id,
+                                          u.fname,
+                                          u.lname
+                                        FROM users u 
+                                        WHERE u.role='employer'";
+
+                    $employeesQ = $conn->query($employeesString);
+                    ?>
+                    <span class="fw-semibold d-block mb-1">Employers</span>
+                    <h3 class="card-title mb-2 text-center"><?= $employeesQ->num_rows ?></h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card">
+                  <div class="card-body">
+                    <?php
+                    $verifiedStr = "SELECT 
+                                      c.verification_id,
+                                      c.name,
+                                      v.status
+                                      FROM company c
+                                      INNER JOIN verification v 
+                                      ON c.verification_id = v.id
+                                      WHERE v.status = 'approved'";
+
+                    $verifiedCompany = $conn->query($verifiedStr);
+                    ?>
+                    <span class="fw-semibold d-block mb-1">Verified Companies</span>
+                    <h3 class="card-title mb-2 text-center"><?= $verifiedCompany->num_rows ?></h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-2">
               <div class="card-body">
-                <div id="chart"></div>
+                <div class="row">
+                  <div class="col-md-12 d-flex justify-content-end">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Select Industries
+                      </button>
+                      <ul class="dropdown-menu scrollable-menu" data-popper-placement="bottom-start">
+                        <?php
+                        $industries = $helpers->custom_query("SELECT 
+                                                                  i.name,
+                                                                  COUNT(j.id) as 'count'
+                                                              FROM industries i
+                                                              LEFT JOIN company c
+                                                              ON c.industry_id = i.id
+                                                              LEFT JOIN job j
+                                                              ON j.company_id = c.id
+                                                              GROUP BY i.name
+                                                              ORDER BY COUNT(j.id) DESC");
+                        if (count($industries) > 0):
+                          for ($i = 0; $i < count($industries) - 1; $i++):
+                        ?>
+                            <li>
+                              <a href="javascript:void(0)" class="dropdown-item">
+                                <div class="form-check">
+                                  <input class="form-check-input" type="checkbox" id="industry_<?= $i ?>" value="<?= $industries[$i]->name ?>" <?= $i < 5 ? "checked" : "" ?>>
+                                  <label class="form-check-label" for="industry_<?= $i ?>"> <?= $industries[$i]->name . " " . ($industries[$i]->count) ?> </label>
+                                </div>
+                              </a>
+                            </li>
+                          <?php endfor; ?>
+                        <?php endif; ?>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div id="chart" class="mt-4"></div>
               </div>
             </div>
           </div>
@@ -85,9 +200,14 @@ if (count($industries) > 0) {
 ?>
 <script>
   const months = <?= json_encode($months) ?>;
+  const series = <?= json_encode($series) ?>;
+
+  let selectedIndustries = $(".form-check-input:checkbox:checked").map(function() {
+    return $(this).val();
+  }).get()
 
   var options = {
-    series: <?= json_encode($series) ?>,
+    series: series.filter((d) => selectedIndustries.includes(d.name)),
     chart: {
       type: 'bar',
       height: 500,
@@ -97,7 +217,6 @@ if (count($industries) > 0) {
       bar: {
         horizontal: false,
         columnWidth: '55%',
-        endingShape: 'rounded'
       },
     },
     dataLabels: {
@@ -128,6 +247,16 @@ if (count($industries) > 0) {
 
   var chart = new ApexCharts(document.querySelector("#chart"), options);
   chart.render();
+
+  $(".form-check-input").on("click", function() {
+    selectedIndustries = $(".form-check-input:checkbox:checked").map(function() {
+      return $(this).val();
+    }).get()
+
+    const newData = series.filter((d) => selectedIndustries.includes(d.name))
+
+    chart.updateSeries(newData);
+  })
 </script>
 
 </html>

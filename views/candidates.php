@@ -81,7 +81,7 @@ $pageName = "Applicants";
                                   <button type="button" class="dropdown-item" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-profile?id=$applicant->user_id" ?>`)'>
                                     Preview Applicant Profile
                                   </button>
-                                  <button type="button" class="dropdown-item" onclick='handleSetInterviewDate(`<?= $applicant->id ?>`)'>
+                                  <button type="button" class="dropdown-item" onclick='handleSetInterviewDate(`<?= $applicant->id ?>`, `<?= $applicant->user_id ?>`, `<?= $applicant->job_id ?>`)'>
                                     Set Interview Date
                                   </button>
                                 </div>
@@ -127,11 +127,25 @@ $pageName = "Applicants";
     <div class="modal-dialog modal-dialog-centered">
       <form id="form-set-interview" class="modal-content">
         <input type="text" name="candidate_id" readonly hidden>
+        <input type="text" name="applicant_id" readonly hidden>
+        <input type="text" name="job_id" readonly hidden>
+
         <div class="modal-header">
           <h5 class="modal-title">Set Interview Date</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <div class="row">
+            <div class="col mb-3">
+              <label for="interview_setup" class="form-label">Setup</label>
+              <select name="setup" class="form-select" id="interview_setup" required>
+                <option value="">-- Select Setup --</option>
+                <option value="On site">On site</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col mb-3">
               <label for="interview_date" class="form-label">Date</label>
@@ -207,8 +221,10 @@ $pageName = "Applicants";
     });
   })
 
-  function handleSetInterviewDate(candidateID) {
+  function handleSetInterviewDate(candidateID, applicantID, jobID) {
     $("input[name='candidate_id']").val(candidateID)
+    $("input[name='applicant_id']").val(applicantID)
+    $("input[name='job_id']").val(jobID)
     $("#modalSetInterviewDate").modal("show")
   }
 
