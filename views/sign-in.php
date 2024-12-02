@@ -84,7 +84,7 @@
         if (resp.success) {
           if (resp.role == "admin") {
             if (resp.is_password_change) {
-              window.location.href = "<?= SERVER_NAME . "/views/profile" ?>";
+              window.location.href = "<?= SERVER_NAME . "/views/admin/dashboard" ?>";
             } else {
               swal.fire({
                   title: "Successfully Login",
@@ -114,7 +114,7 @@
             if (resp.token) {
               window.location.href = `<?= SERVER_NAME . "/views/company-details?t=" ?>${resp.token}`;
             } else {
-              window.location.href = "<?= SERVER_NAME . "/views/profile" ?>";
+              window.location.href = "<?= SERVER_NAME . "/views/dashboard" ?>";
             }
 
           }

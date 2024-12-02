@@ -184,6 +184,20 @@ $pageName = "Add Job";
                         </div>
 
                         <div class="mb-3 form-group">
+                          <label for="industry" class="form-label">Job Industry</label>
+                          <select class="form-select" name="industry[]" id="industry" multiple required>
+                            <?php
+                            $industry_list = $helpers->select_all_with_params("industries", "name <> ''");
+                            if (count($industry_list) > 0) :
+                              foreach ($industry_list as $industry) :
+                            ?>
+                                <option value="<?= $industry->id ?>"><?= $industry->name ?></option>
+                              <?php endforeach; ?>
+                            <?php endif; ?>
+                          </select>
+                        </div>
+
+                        <div class="mb-3 form-group">
                           <label for="description" class="form-label">Job Description</label>
                           <textarea name="description" id="description" class="form-control" cols="30" rows="10" required></textarea>
                         </div>
@@ -218,34 +232,12 @@ $pageName = "Add Job";
 <?php include("../components/footer.php") ?>
 
 <script>
-  $('#experience').select2({
+  $('#experience, #industry, #qualifications, #schedule, #benefits').select2({
     theme: "bootstrap-5",
     width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
     placeholder: $(this).data('placeholder'),
     closeOnSelect: true,
     tags: true
-  });
-
-  $('#qualifications').select2({
-    theme: "bootstrap-5",
-    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-    placeholder: $(this).data('placeholder'),
-    closeOnSelect: false,
-    tags: true
-  });
-
-  $('#schedule').select2({
-    theme: "bootstrap-5",
-    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-    placeholder: $(this).data('placeholder'),
-    closeOnSelect: false,
-  });
-
-  $('#benefits').select2({
-    theme: "bootstrap-5",
-    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-    placeholder: $(this).data('placeholder'),
-    closeOnSelect: false,
   });
 
   $("#add-job").on("submit", function(e) {

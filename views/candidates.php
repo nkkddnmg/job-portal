@@ -41,11 +41,11 @@ $pageName = "Applicants";
                 <table id="applicants-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
+                      <th>Applicant Name</th>
                       <th>Title</th>
                       <th>Job Type</th>
                       <th class="text-start">Date Applied</th>
                       <th>Status</th>
-                      <th>Applicant Name</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -62,16 +62,16 @@ $pageName = "Applicants";
                           $btnDropDownId = "btn-dropdown-$job->id";
                     ?>
                           <tr>
+                            <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                             <td><?= $job->title ?></td>
                             <td><?= $job->type ?></td>
                             <td class="text-start"><?= date("Y-m-d H:i:s", strtotime($applicant->date_applied)) ?></td>
                             <td><?= ucfirst($applicant->status) ?></td>
-                            <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                             <td>
                               <div class="dropdown">
 
-                                <button class="btn btn-default rounded-circle" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  <i class='bx bx-dots-vertical-rounded' data-bs-toggle="tooltip" data-placement="top" title="More"></i>
+                                <button class="btn btn-primary btn-sm" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                 More
                                 </button>
 
                                 <div class="dropdown-menu" aria-labelledby="<?= $btnDropDownId ?>" data-bs-popper="none">
@@ -160,7 +160,7 @@ $pageName = "Applicants";
           <div class="row g-2">
             <div class="col mb-0">
               <label for="time_from" class="form-label">From</label>
-              <input type="time" id="time_from" name="time_from" class="form-control" min="<?= date("H:i") ?>" placeholder="hh:mm" required />
+              <input type="time" id="time_from" name="time_from" class="form-control" placeholder="hh:mm" required />
             </div>
             <div class="col mb-0">
               <label for="time_to" class="form-label">To</label>
@@ -186,10 +186,6 @@ $pageName = "Applicants";
 <?php include("../components/footer.php") ?>
 
 <script>
-  $("#time_from").on("blur", function(e) {
-    $("#time_to").attr("min", e.target.value)
-  })
-
   $("#form-set-interview").on("submit", function(e) {
     e.preventDefault();
 

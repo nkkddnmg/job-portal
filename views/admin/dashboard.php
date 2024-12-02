@@ -29,10 +29,11 @@ $pageName = "Dashboard";
           <div class="container-xxl flex-grow-1 container-p-y">
             <div class="row">
               <div class="col-md-3">
-                <div class="card">
-                  <div class="card-body">
-                    <?php
-                    $applicantStr = "SELECT 
+                <a href="<?= SERVER_NAME . "/views/admin/applicants" ?>">
+                  <div class="card">
+                    <div class="card-body">
+                      <?php
+                      $applicantStr = "SELECT 
                                         u.id,
                                         u.fname,
                                         u.lname
@@ -40,18 +41,20 @@ $pageName = "Dashboard";
                                     WHERE u.role = 'applicant'
                                     AND u.id NOT IN(SELECT c.user_id FROM candidates c WHERE c.status = 'Hired')";
 
-                    $applicantQ = $conn->query($applicantStr);
-                    ?>
-                    <span class="fw-semibold d-block mb-1">Applicants</span>
-                    <h3 class="card-title mb-2 text-center"><?= $applicantQ->num_rows ?></h3>
+                      $applicantQ = $conn->query($applicantStr);
+                      ?>
+                      <span class="fw-semibold d-block mb-1">Applicants</span>
+                      <h3 class="card-title mb-2 text-center"><?= $applicantQ->num_rows ?></h3>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="col-md-3">
-                <div class="card">
-                  <div class="card-body">
-                    <?php
-                    $pendingString = "SELECT 
+                <a href="<?= SERVER_NAME . "/views/admin/pending-verification" ?>">
+                  <div class="card">
+                    <div class="card-body px-3">
+                      <?php
+                      $pendingString = "SELECT 
                                       c.verification_id,
                                       c.name,
                                       v.status
@@ -60,36 +63,35 @@ $pageName = "Dashboard";
                                       ON c.verification_id = v.id
                                       WHERE v.status = 'pending'";
 
-                    $pendingCompany = $conn->query($pendingString);
-                    ?>
-                    <span class="fw-semibold d-block mb-1">Pending Company Verification</span>
-                    <h3 class="card-title mb-2 text-center"><?= $pendingCompany->num_rows ?></h3>
+                      $pendingCompany = $conn->query($pendingString);
+                      ?>
+                      <span class="fw-semibold d-block mb-1">Pending Company Verification</span>
+                      <h3 class="card-title mb-2 text-center"><?= $pendingCompany->num_rows ?></h3>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="col-md-3">
-                <div class="card">
-                  <div class="card-body">
-                    <?php
-                    $employeesString = "SELECT 
-                                          u.id,
-                                          u.fname,
-                                          u.lname
-                                        FROM users u 
-                                        WHERE u.role='employer'";
+                <a href="<?= SERVER_NAME . "/views/admin/employers" ?>">
+                  <div class="card">
+                    <div class="card-body">
+                      <?php
+                      $jobs = $helpers->select_all_with_params("job", "status <> 'inactive'");
 
-                    $employeesQ = $conn->query($employeesString);
-                    ?>
-                    <span class="fw-semibold d-block mb-1">Employers</span>
-                    <h3 class="card-title mb-2 text-center"><?= $employeesQ->num_rows ?></h3>
+                      $jobCount = $jobs ? count($jobs) : 0;
+                      ?>
+                      <span class="fw-semibold d-block mb-1">Available Jobs</span>
+                      <h3 class="card-title mb-2 text-center"><?= $jobCount ?></h3>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="col-md-3">
-                <div class="card">
-                  <div class="card-body">
-                    <?php
-                    $verifiedStr = "SELECT 
+                <a href="<?= SERVER_NAME . "/views/admin/companies" ?>">
+                  <div class="card">
+                    <div class="card-body">
+                      <?php
+                      $verifiedStr = "SELECT 
                                       c.verification_id,
                                       c.name,
                                       v.status
@@ -98,12 +100,13 @@ $pageName = "Dashboard";
                                       ON c.verification_id = v.id
                                       WHERE v.status = 'approved'";
 
-                    $verifiedCompany = $conn->query($verifiedStr);
-                    ?>
-                    <span class="fw-semibold d-block mb-1">Verified Companies</span>
-                    <h3 class="card-title mb-2 text-center"><?= $verifiedCompany->num_rows ?></h3>
+                      $verifiedCompany = $conn->query($verifiedStr);
+                      ?>
+                      <span class="fw-semibold d-block mb-1">Verified Companies</span>
+                      <h3 class="card-title mb-2 text-center"><?= $verifiedCompany->num_rows ?></h3>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
 
@@ -134,7 +137,7 @@ $pageName = "Dashboard";
                               <a href="javascript:void(0)" class="dropdown-item">
                                 <div class="form-check">
                                   <input class="form-check-input" type="checkbox" id="industry_<?= $i ?>" value="<?= $industries[$i]->name ?>" <?= $i < 5 ? "checked" : "" ?>>
-                                  <label class="form-check-label" for="industry_<?= $i ?>"> <?= $industries[$i]->name . " " . ($industries[$i]->count) ?> </label>
+                                  <label class="form-check-label" for="industry_<?= $i ?>"> <?= $industries[$i]->name . " (" . ($industries[$i]->count) . ")" ?> </label>
                                 </div>
                               </a>
                             </li>

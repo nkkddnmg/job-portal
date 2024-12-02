@@ -42,6 +42,12 @@
           </li>
 
           <li class="nav-item" role="presentation">
+            <a class="nav-link" id="certificate-tab" data-toggle="tab" href="#certificate" type="button" role="tab" aria-controls="certificate" aria-selected="false">
+              Certificates
+            </a>
+          </li>
+
+          <li class="nav-item" role="presentation">
             <a class="nav-link" id="work-exp-tab" data-toggle="tab" href="#work-exp" type="button" role="tab" aria-controls="work-exp" aria-selected="false">
               Work Experience
             </a>
@@ -189,6 +195,42 @@
                     </div>
                   <?php endforeach; ?>
                 <?php endif; ?>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="certificate" role="tabpanel" aria-labelledby="certificate-tab">
+
+            <div class="row d-flex justify-content-center mt-4">
+              <div class="col-md-11">
+                <div class="row">
+                  <?php
+                  $certData = $helpers->select_all_with_params("certificates", "user_id='$userData->id'");
+
+                  if (count($certData) > 0) :
+                    foreach ($certData as $cert):
+                  ?>
+                      <div class="col-md-6 col-lg-4 mb-5 position-relative">
+
+                        <a href="<?= $cert->cert ?>" class="" target="_blank">
+                          <img src="<?= $cert->cert ?>" alt="Image" class="img-fluid rounded mb-4">
+                        </a>
+                        <h3>
+                          <a href="<?= $cert->cert ?>" class="text-black" target="_blank">
+                            <?= $cert->title ?>
+                          </a>
+                        </h3>
+                        <div>
+                          <?= date("F d, Y", strtotime($cert->date_acquired)) ?>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <h3>
+                      No Certificate
+                    </h3>
+                  <?php endif; ?>
+                </div>
               </div>
             </div>
           </div>

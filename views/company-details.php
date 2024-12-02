@@ -81,6 +81,14 @@
 
                 </div>
 
+                <div class="form-group mb-3 col-md-12">
+                  <label for="inputMapDisplay" class="form-label">Map Display</label>
+                  <textarea class="form-control" id="inputMapDisplay" name="mapFrame" rows="3"></textarea>
+                </div>
+
+                <div class="form-group mb-3 col-md-12 d-none" id="mapFrame"></div>
+
+
                 <div class="mb-3 form-group">
                   <label for="description" class="form-label">Description</label>
                   <textarea class="form-control" id="description" name="description" rows="3"></textarea>
@@ -116,6 +124,36 @@
 <?php include("../components/footer.php") ?>
 <script>
   const handleCancel = () => window.location.href = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
+
+  $(document).ready(function() {
+    if ($("#inputMapDisplay").val()) {
+      displayMap($("#inputMapDisplay").val())
+    }
+  });
+
+  $("#inputMapDisplay").on("blur", function() {
+    displayMap($(this).val())
+  })
+
+  function displayMap(val) {
+    if (val) {
+      $("#mapFrame").html("")
+      $("#mapFrame").append(val)
+      $("#mapFrame").removeClass("d-none")
+
+      const iframe = $("#mapFrame").find("iframe")
+      if (iframe.length) {
+        $(iframe).css({
+          "border": "0",
+          "width": "100%",
+          "height": "250px"
+        })
+      }
+    } else {
+      $("#mapFrame").html("")
+      $("#mapFrame").addClass("d-none")
+    }
+  }
 
   $("#companyName").on("input", function() {
     updateForm();

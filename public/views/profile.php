@@ -16,6 +16,14 @@ if (isset($_SESSION["id"])) {
   .button-wrapper {
     margin-left: 20px;
   }
+
+  .custom-img-close-icon {
+    position: absolute;
+    right: 3px;
+    top: -15px;
+    cursor: pointer;
+    font-size: 30px;
+  }
 </style>
 
 <body id="top">
@@ -55,6 +63,12 @@ if (isset($_SESSION["id"])) {
           <li class="nav-item" role="presentation">
             <a class="nav-link" id="education-tab" data-toggle="tab" href="#education" type="button" role="tab" aria-controls="education" aria-selected="false">
               Education
+            </a>
+          </li>
+
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="certificate-tab" data-toggle="tab" href="#certificate" type="button" role="tab" aria-controls="certificate" aria-selected="false">
+              Certificates
             </a>
           </li>
 
@@ -110,11 +124,13 @@ if (isset($_SESSION["id"])) {
                 if ($customQ->num_rows > 0) :
                   $res = $customQ->fetch_object();
                   $job_data = $helpers->select_all_individual("job", "id='$res->id'");
-                  $company_data = $helpers->select_all_individual("company", "id='$job_data->id'");
+                  if ($job_data):
+                    $company_data = $helpers->select_all_individual("company", "id='$job_data->id'");
 
-                  if ($company_data):
+                    if ($company_data):
                 ?>
-                    Affiliated with <strong><?= "$company_data->name " . date("F Y", strtotime($res->date_hired)) ?></strong>
+                      Affiliated with <strong><?= "$company_data->name " . date("F Y", strtotime($res->date_hired)) ?></strong>
+                    <?php endif; ?>
                   <?php endif; ?>
                 <?php endif; ?>
               </div>
@@ -254,6 +270,50 @@ if (isset($_SESSION["id"])) {
             </div>
           </div>
 
+          <div class="tab-pane fade" id="certificate" role="tabpanel" aria-labelledby="certificate-tab">
+            <div class="row justify-content-end">
+              <div class="col-3">
+                <a href="javascript:void(0)" onclick='handleNavigateWithRef(`<?= SERVER_NAME . "/views/add-certificate?t=" . $helpers->encrypt($LOGIN_USER->id) ?>`)' class="btn btn-primary">Add Certificate</a>
+              </div>
+            </div>
+            <div class="row d-flex justify-content-center mt-4">
+              <div class="col-md-12">
+                <div class="row">
+                  <?php
+                  $certData = $helpers->select_all_with_params("certificates", "user_id='$LOGIN_USER->id'");
+
+                  if (count($certData) > 0) :
+                    foreach ($certData as $cert):
+                      $imgDivId = "cert_$cert->id";
+                  ?>
+                      <div class="col-md-6 col-lg-4 mb-5 position-relative" id="<?= $imgDivId ?>">
+                        <i class="bx bxs-x-circle text-danger custom-img-close-icon" onclick="handleRemove('<?= $cert->id ?>', '<?= $imgDivId ?>')"></i>
+                        <a href="<?= $cert->cert ?>" class="" target="_blank">
+                          <img src="<?= $cert->cert ?>" alt="Image" class="img-fluid rounded mb-4">
+                        </a>
+                        <h3>
+                          <a href="<?= $cert->cert ?>" class="text-black" target="_blank">
+                            <?= $cert->title ?>
+                          </a>
+                        </h3>
+                        <div>
+                          <?= date("F d, Y", strtotime($cert->date_acquired)) ?>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <h3>
+                      No Certificate
+                      <a href="javascript:void(0)" onclick='handleNavigateWithRef(`<?= SERVER_NAME . "/views/add-certificate?t=" . $helpers->encrypt($LOGIN_USER->id) ?>`)' class="btn btn-primary btn-sm ml-2">
+                        Add here
+                      </a>
+                    </h3>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="tab-pane fade" id="work-exp" role="tabpanel" aria-labelledby="work-exp-tab">
             <div class="row justify-content-end">
               <div class="col-4">
@@ -274,16 +334,17 @@ if (isset($_SESSION["id"])) {
                       <div class="card-header position-relative">
                         <h5 class="text-dark"><?= $exp->job_title ?></h5>
                         <div class="position-absolute m-2" style="top:0; right:0;">
-                          <a href="<?= SERVER_NAME . "/views/edit-work-experience?t=" . $helpers->encrypt($LOGIN_USER->id) . "&&id=$exp->id" ?>" class="btn btn-default btn-sm p-0">
-                            <i class='bx bxs-edit h4'></i>
-                          </a>
-
-                          <?php if (count($work_experience) > 1) : ?>
-                            <a href="javascript:void(0)" class="btn btn-default btn-sm p-0" onclick="handleWorkExperienceDelete(`<?= $exp->id ?>`)">
-                              <i class='bx bxs-trash h4'></i>
+                          <?php if ($exp->is_automatic == "0"): ?>
+                            <a href="<?= SERVER_NAME . "/views/edit-work-experience?t=" . $helpers->encrypt($LOGIN_USER->id) . "&&id=$exp->id" ?>" class="btn btn-default btn-sm p-0">
+                              <i class='bx bxs-edit h4'></i>
                             </a>
-                          <?php endif; ?>
 
+                            <?php if (count($work_experience) > 1) : ?>
+                              <a href="javascript:void(0)" class="btn btn-default btn-sm p-0" onclick="handleWorkExperienceDelete(`<?= $exp->id ?>`)">
+                                <i class='bx bxs-trash h4'></i>
+                              </a>
+                            <?php endif; ?>
+                          <?php endif; ?>
                         </div>
                       </div>
                       <div class="card-body">
@@ -298,7 +359,7 @@ if (isset($_SESSION["id"])) {
                 <?php else : ?>
                   <h3>
                     No Work Experience
-                    <a href="<?= SERVER_NAME . "/views/work-experience?t=" . $helpers->encrypt($LOGIN_USER->id) . "&&from=profile" ?>" class="btn btn-primary btn-sm ml-2">Add here</a>
+                    <a href="javascript:void(0)" onclick='handleNavigateWithRef(`<?= SERVER_NAME . "/views/work-experience?t=" . $helpers->encrypt($LOGIN_USER->id) . "&&from=profile" ?>`)' class="btn btn-primary btn-sm ml-2">Add here</a>
                   </h3>
 
                 <?php endif; ?>
@@ -446,6 +507,59 @@ if (isset($_SESSION["id"])) {
   <!-- SCRIPTS -->
   <?php include("../components/footer.php") ?>
   <script>
+    function handleRemove(id, collectionDiv) {
+      swal.fire({
+        title: "Are you sure you want to remove this image?",
+        text: "You can't undo this action after successful deletion.",
+        icon: "warning",
+        confirmButtonText: "Delete",
+        confirmButtonColor: "#dc3545",
+        showCancelButton: true,
+      }).then((d) => {
+        if (d.isConfirmed) {
+          swal.showLoading();
+          $.post("<?= SERVER_NAME ?>/backend/nodes?action=remove_certificate", {
+            id: id
+          }, (data, status) => {
+            const resp = JSON.parse(data);
+            if (!resp.success) {
+              swal.fire({
+                title: "Error!",
+                html: resp.message,
+                icon: "error",
+              });
+            } else {
+              window.location.reload();
+            }
+          }).fail(function(e) {
+            swal.fire({
+              title: "Error!",
+              html: e.statusText,
+              icon: "error",
+            });
+          });
+        }
+      });
+    }
+
+    const handleWorkExperienceDelete = (id) => {
+      const postData = {
+        table: "work_experience",
+        column: "id",
+        val: id,
+      }
+
+      const confirmOptions = {
+        title: "Are you sure you want to delete this work experience?",
+        text: undefined,
+        buttonText: "Delete",
+        buttonColor: "#dc3545",
+      }
+
+      swal.showLoading();
+      handleDelete("<?= SERVER_NAME . "/backend/nodes?action=delete_data" ?>", confirmOptions, postData);
+    }
+
     function handleNavigateWithRef(location) {
       const referrer = encodeURIComponent(window.location.href);
       window.location.href = `${location}&ref=${referrer}`

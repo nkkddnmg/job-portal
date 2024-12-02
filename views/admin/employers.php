@@ -6,7 +6,7 @@ if (!isset($_SESSION["id"])) {
 }
 
 $LOGIN_USER = $helpers->get_user_by_id($_SESSION["id"]);
-$pageName = "Employer Lists";
+$pageName = "Company Representatives";
 ?>
 <!DOCTYPE html>
 
@@ -42,9 +42,8 @@ $pageName = "Employer Lists";
                   <thead>
                     <tr>
                       <th>Avatar</th>
-                      <th>First name</th>
-                      <th>Middle name</th>
-                      <th>Last name</th>
+                      <th>Company name</th>
+                      <th>Full name</th>
                       <th>Address</th>
                       <th>Email</th>
                       <th>Date Created</th>
@@ -57,6 +56,7 @@ $pageName = "Employer Lists";
 
                     if (count($employers) > 0) :
                       foreach ($employers as $employer) :
+                        $companyData = $helpers->select_all_individual("company", "id='$employer->company_id'");
 
                         $modal_id = "employer-img-modal_$employer->id";
                         $img_id = "employer-image_$employer->id";
@@ -67,10 +67,9 @@ $pageName = "Employer Lists";
                           <td class="td-image">
                             <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($employer->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
-                          <td><?= $employer->fname ?></td>
-                          <td><?= empty($employer->mname) ? "<em class='text-muted'>N/A</em>" : $employer->mname ?></td>
-                          <td><?= $employer->lname ?></td>
-                          <td><?= $employer->district ?></td>
+                          <td><?= $companyData->name ?></td>
+                          <td><?= $helpers->get_full_name($employer->id) ?></td>
+                          <td><?= "$employer->address $employer->district" ?></td>
                           <td><?= $employer->email ?></td>
                           <td><?= date("m-d-Y", strtotime($employer->date_created)) ?></td>
                           <td>

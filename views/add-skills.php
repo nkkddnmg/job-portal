@@ -28,24 +28,26 @@
 
             if (count($applicant_skills) > 0) :
               foreach ($applicant_skills as $skill) :
-                $skillData = $helpers->select_all_individual("skills_list", "id='$skill->skill_id'");
-                array_push($skillsIds, $skill->skill_id);
 
+                $skillData = $helpers->select_all_individual("skills_list", "id='$skill->skill_id'");
+                if ($skillData) :
+                  array_push($skillsIds, $skill->skill_id);
             ?>
-                <div class="card mb-3">
-                  <div class="card-body py-2">
-                    <div class="card-header p-0 position-relative">
-                      <div class="position-absolute top-0 end-0">
-                        <a href="javascript:void(0)" class="btn btn-default btn-sm p-0" onclick="handleRemoveSkills(`<?= $skill->id ?>`)">
-                          <i class='bx bxs-trash h4'></i>
-                        </a>
+                  <div class="card mb-3">
+                    <div class="card-body py-2">
+                      <div class="card-header p-0 position-relative">
+                        <div class="position-absolute top-0 end-0">
+                          <a href="javascript:void(0)" class="btn btn-default btn-sm p-0" onclick="handleRemoveSkills(`<?= $skill->id ?>`)">
+                            <i class='bx bxs-trash h4'></i>
+                          </a>
+                        </div>
                       </div>
+                      <p class="m-0" style="color: #697a8d">
+                        <?= $skillData->name ?>
+                      </p>
                     </div>
-                    <p class="m-0" style="color: #697a8d">
-                      <?= $skillData->name ?>
-                    </p>
                   </div>
-                </div>
+                <?php endif; ?>
               <?php endforeach; ?>
             <?php else : ?>
               <div class="card">
@@ -115,7 +117,7 @@
       window.location.href = "<?= SERVER_NAME . "/public/views/home" ?>"
     }
   }
-  
+
   const handleCancel = () => window.location.href = "<?= SERVER_NAME . "/backend/nodes?action=logout" ?>";
 
   function handleAddSkill(skillId, token) {

@@ -60,14 +60,30 @@ $pageName = "Preview Company";
 
                   <div class="card-body">
                     <form id="form-verify-company" method="POST">
-                      <input type="text" name="company_id" value="<?= $companyID ?>" readonly hidden>
+                      <input type="text" name="company_id" value="<?= $company->id ?>" readonly hidden>
                       <div class="row">
                         <div class="form-group mb-3 col-md-4">
                           <label for="name" class="form-label">Name</label>
                           <input class="form-control" type="text" id="name" name="name" value="<?= $company->name ?>" required readonly />
                         </div>
-                        <div class="form-group mb-3 col-md-4">
-                          <label for="companyAddress" class="form-label">Address</label>
+
+                        <div class="mb-3 form-group col-md-4">
+                          <label for="contact" class="form-label">Contact</label>
+                          <input class="form-control" type="text" id="contact" name="contact" value="<?= $company->contact ?>" readonly>
+                        </div>
+
+                        <div class="mb-3 form-group col-md-4">
+                          <label for="email" class="form-label">Email</label>
+                          <input class="form-control" type="text" id="email" name="email" value="<?= $company->email ?>" readonly>
+                        </div>
+
+                        <div class="mb-3 form-group col-md-4">
+                          <label for="address" class="form-label">Address</label>
+                          <input class="form-control" type="text" id="address" name="address" value="<?= $company->address ?>" readonly />
+                        </div>
+
+                        <div class="mb-3 form-group col-md-4">
+                          <label for="district" class="form-label">District</label>
                           <?php
                           foreach ($helpers->districtList as $district) :
                             if ($district == $company->district) :
@@ -75,8 +91,8 @@ $pageName = "Preview Company";
                               <input class="form-control" type="text" id="companyAddress" name="companyAddress" value="<?= $company->district ?>" required readonly />
                             <?php endif; ?>
                           <?php endforeach; ?>
-
                         </div>
+
                         <div class="form-group mb-3 col-md-4">
                           <label for="industry" class="form-label">Industry</label>
                           <?php
@@ -88,6 +104,14 @@ $pageName = "Preview Company";
                             <?php endif; ?>
                           <?php endforeach; ?>
                         </div>
+
+                        <div class="form-group mb-3 col-md-12 d-none">
+                          <label for="inputMapDisplay" class="form-label">Map Display</label>
+                          <textarea class="form-control" id="inputMapDisplay" name="mapFrame" rows="3"><?= $company->map_frame ?></textarea>
+                        </div>
+
+                        <div class="form-group mb-3 col-md-12 d-none" id="mapFrame"></div>
+
                         <div class="form-group mb-3 col-md-12">
                           <label for="description" class="form-label">Description</label>
                           <textarea class="form-control" id="description" name="description" rows="3" readonly><?= nl2br($company->description) ?></textarea>
@@ -117,7 +141,7 @@ $pageName = "Preview Company";
                     </form>
                   </div>
                   <div class="divider">
-                    <div class="divider-text">Employers</div>
+                    <div class="divider-text">Company Representative</div>
                   </div>
                   <div class="card-body">
                     <div class="row">
@@ -136,7 +160,10 @@ $pageName = "Preview Company";
                                     <?= $helpers->get_full_name($employer->id) ?>
                                   </h5>
                                   <span class="d-flex align-items-center" style="font-size: .75rem !important;">
-                                    <?= $employer->district ?>
+                                    <?= $employer->contact ?>
+                                  </span>
+                                  <span class="d-flex align-items-center" style="font-size: .75rem !important;">
+                                    <a href="mailto:<?= $employer->email ?>"><?= $employer->email ?></a>
                                   </span>
                                 </div>
                                 <button onclick='window.location.href = `<?= SERVER_NAME . "/views/profile?id=$employer->id" ?>`' class="btn btn-primary btn-sm py-1 px-2 ms-auto">
@@ -172,6 +199,36 @@ $pageName = "Preview Company";
 <?php include("../../components/footer.php") ?>
 
 <script>
+  $(document).ready(function() {
+    if ($("#inputMapDisplay").val()) {
+      displayMap($("#inputMapDisplay").val())
+    }
+  });
+
+  $("#inputMapDisplay").on("blur", function() {
+    displayMap($(this).val())
+  })
+
+  function displayMap(val) {
+    if (val) {
+      $("#mapFrame").html("")
+      $("#mapFrame").append(val)
+      $("#mapFrame").removeClass("d-none")
+
+      const iframe = $("#mapFrame").find("iframe")
+      if (iframe.length) {
+        $(iframe).css({
+          "border": "0",
+          "width": "100%",
+          "height": "250px"
+        })
+      }
+    } else {
+      $("#mapFrame").html("")
+      $("#mapFrame").addClass("d-none")
+    }
+  }
+
   const handleSubmit = (action, id) => {
     if (action == "denied") {
       swal.fire({

@@ -193,6 +193,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                       $companyDistrict = "";
                       $industry = "";
                       $description = "";
+                      $mapFrame = "";
 
                       $verification_id = "";
                       if ($LOGIN_USER->company_id) {
@@ -209,6 +210,8 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                           $companyDistrict = $getCompanyData->district;
                           $industryID = $getCompanyData->industry_id;
                           $description = nl2br($getCompanyData->description);
+
+                          $mapFrame = $getCompanyData->map_frame;
 
                           $verification_id = $getCompanyData->verification_id;
                         }
@@ -268,6 +271,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                                   <?php endforeach; ?>
                                 </select>
                               </div>
+
                               <div class="form-group mb-3 col-md-4">
                                 <label for="industry" class="form-label">Industry</label>
                                 <select class="form-select" name="industry" id="industry" required>
@@ -283,6 +287,7 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                                   ?>
                                 </select>
                               </div>
+
                               <div class="form-group mb-3 col-md-4">
                                 <label for="contact" class="form-label">Contact</label>
                                 <input class="form-control" type="text" id="contact" name="contact" value="<?= $companyContact ?>" required />
@@ -291,6 +296,14 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
                                 <label for="email" class="form-label">Email</label>
                                 <input class="form-control" type="email" id="email" name="email" value="<?= $companyEmail ?>" required />
                               </div>
+
+                              <div class="form-group mb-3 col-md-12">
+                                <label for="inputMapDisplay" class="form-label">Map Display</label>
+                                <textarea class="form-control" id="inputMapDisplay" name="mapFrame" rows="3"><?= $mapFrame ?></textarea>
+                              </div>
+
+                              <div class="form-group mb-3 col-md-12 d-none" id="mapFrame"></div>
+
                               <div class="form-group mb-3 col-md-12">
                                 <label for="description" class="form-label">Description</label>
                                 <textarea class="form-control" id="description" name="description" rows="3"><?= $description ?></textarea>
@@ -425,6 +438,36 @@ $user_avatar_link = $helpers->get_avatar_link(isset($_GET["id"]) ? $_GET["id"] :
 </body>
 <?php include("../components/footer.php") ?>
 <script>
+  $(document).ready(function() {
+    if ($("#inputMapDisplay").val()) {
+      displayMap($("#inputMapDisplay").val())
+    }
+  });
+
+  $("#inputMapDisplay").on("blur", function() {
+    displayMap($(this).val())
+  })
+
+  function displayMap(val) {
+    if (val) {
+      $("#mapFrame").html("")
+      $("#mapFrame").append(val)
+      $("#mapFrame").removeClass("d-none")
+
+      const iframe = $("#mapFrame").find("iframe")
+      if (iframe.length) {
+        $(iframe).css({
+          "border": "0",
+          "width": "100%",
+          "height": "250px"
+        })
+      }
+    } else {
+      $("#mapFrame").html("")
+      $("#mapFrame").addClass("d-none")
+    }
+  }
+
   $("#divBusinessPermit").imageupload()
 
   $("#btnChangeBusinessPermit").on("click", function() {

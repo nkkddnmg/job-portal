@@ -185,7 +185,7 @@ $("[required]")
 window.navigateSIgnUp = () => {
   swal
     .fire({
-      title: `Signing in as?`,
+      title: `Signing up as?`,
       icon: "question",
       confirmButtonText: "Employer",
       denyButtonText: "Applicant",

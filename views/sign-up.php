@@ -98,7 +98,7 @@
 
 <script>
   const handleGoBackToPublicPage = () => {
-    window.location.href = '<?= SERVER_NAME . "/public/views/home" ?>'
+    window.location.href = document.referrer
   }
 
   function showButtonLoading(buttonEl, enableLoading = true) {
@@ -192,12 +192,6 @@
       $(element).removeClass('is-invalid');
     }
   });
-
-  $("#form-sign-up").on("submit", function(e) {
-    e.preventDefault()
-
-
-  })
 </script>
 
 </html>

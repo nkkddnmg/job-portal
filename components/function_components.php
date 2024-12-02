@@ -41,6 +41,8 @@ function head(string $title)
 
     <link rel='stylesheet' href='$serverName/custom-assets/components/image-upload/css/bootstrap-imageupload.min.css'>
 
+    <link rel='stylesheet' href='$serverName/assets/vendor/libs/editable-select/jquery-editable-select.css'>
+
     <link rel='stylesheet' href='https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css'>
   </head>
   ";

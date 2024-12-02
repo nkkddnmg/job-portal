@@ -42,9 +42,9 @@ $pageName = "Employees List";
                 <table id="hired-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
+                      <th>Name</th>
                       <th>Title</th>
                       <th>Job Type</th>
-                      <th>Applicant Name</th>
                       <th class="text-start">Date Applied</th>
                       <th class="text-start">Hired Date</th>
                       <th class="text-start">Separation Date</th>
@@ -69,9 +69,9 @@ $pageName = "Employees List";
                           $time_to = date("h:i A", strtotime($post_interview_time[1]));
                     ?>
                           <tr>
+                            <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                             <td><?= $job->title ?></td>
                             <td><?= $job->type ?></td>
-                            <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                             <td class="text-start"><?= date("Y-m-d", strtotime($applicant->date_applied)) ?></td>
                             <td class="text-start"><?= date("Y-m-d", strtotime($applicant->date_hired)) ?></td>
                             <td class="text-start"><?= $applicant->date_separated ?  date("Y-m-d", strtotime($applicant->date_separated)) : "<em>----</em>" ?></td>
@@ -89,8 +89,8 @@ $pageName = "Employees List";
                             <td>
                               <div class="dropdown">
 
-                                <button class="btn btn-default rounded-circle" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  <i class='bx bx-dots-vertical-rounded' data-bs-toggle="tooltip" data-placement="top" title="More"></i>
+                                <button class="btn btn-primary btn-sm" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                 More
                                 </button>
 
                                 <div class="dropdown-menu" aria-labelledby="<?= $btnDropDownId ?>" data-bs-popper="none">
@@ -258,7 +258,7 @@ $pageName = "Employees List";
 
               <div class="form-group text-center mb-3" id="rating-ability-wrapper">
                 <div class="text-start w-100">
-                  <strong>Soft Skills</strong>
+                  <strong>Flexibility</strong>
 
                   <div class="mt-2">
                     ${btnFlexibilityStars}

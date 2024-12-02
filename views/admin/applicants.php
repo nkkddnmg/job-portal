@@ -51,7 +51,19 @@ $pageName = "Applicant Lists";
                   </thead>
                   <tbody>
                     <?php
-                    $applicants = $helpers->select_all_with_params("users", "role='applicant'");
+                    $applicantStr = "SELECT 
+                                          u.id,
+                                          u.fname,
+                                          u.lname,
+                                          u.address,
+                                          u.district,
+                                          u.email,
+                                          u.date_created
+                                      FROM users u 
+                                      WHERE u.role = 'applicant'
+                                      AND u.id NOT IN(SELECT c.user_id FROM candidates c WHERE c.status = 'Hired')";
+
+                    $applicants = $helpers->custom_query($applicantStr);
 
                     if (count($applicants) > 0) :
                       foreach ($applicants as $applicant) :
@@ -64,12 +76,12 @@ $pageName = "Applicant Lists";
                             <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($applicant->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
                           <td><?= $helpers->get_full_name($applicant->id, "with_middle") ?></td>
-                          <td><?= $applicant->district ?></td>
+                          <td><?= "$applicant->address $applicant->district" ?></td>
                           <td><?= $applicant->email ?></td>
                           <td><?= date("m-d-Y", strtotime($applicant->date_created)) ?></td>
                           <td>
                             <?php if ($applicant->id != $LOGIN_USER->id) : ?>
-                              <button type="button" class="btn btn-primary btn-sm" onclick='return window.location.href =`<?= SERVER_NAME . "/views/profile?id=$applicant->id" ?>`'>
+                              <button type="button" class="btn btn-primary btn-sm" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-profile?id=$applicant->id" ?>`)'>
                                 View Profile
                               </button>
                             <?php else : ?>
@@ -100,6 +112,22 @@ $pageName = "Applicant Lists";
   <div class="layout-overlay layout-menu-toggle"></div>
 
 </body>
+<div class="modal fade" id="modalPreview" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content" style="height:90vh">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col mb-3" style="height: 100%">
+            <iframe src="" id="previewIframe" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;height:100%;width:100%;position:absolute;top:0px;left:0px;right:0px;bottom:0px" height="100%" width="100%"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <?php include("../../components/footer.php") ?>
 
@@ -158,6 +186,11 @@ $pageName = "Applicant Lists";
       >
       `,
   });
+
+  function handleOpenModal(src) {
+    $("#previewIframe").attr("src", src)
+    $("#modalPreview").modal("show")
+  }
 </script>
 
 </html>

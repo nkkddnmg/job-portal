@@ -44,7 +44,6 @@ $pageName = "Denied Companies";
                       <th>Company Logo</th>
                       <th>Name</th>
                       <th>Industry</th>
-                      <th>Verification</th>
                       <th>Reason</th>
                       <th>Date Denied</th>
                       <th>Actions</th>
@@ -74,9 +73,6 @@ $pageName = "Denied Companies";
                           </td>
                           <td><?= $company->name ?></td>
                           <td><?= $industryData ? $industryData->name : $NA ?></td>
-                          <td>
-                            <span class="badge bg-label-danger me-1">Denied</span>
-                          </td>
                           <td><?= str_replace("Denied reason: ", "", $verificationData->message) ?></td>
                           <td><?= date("Y-m-d", strtotime($verificationData->date_updated)) ?></td>
                           <td>

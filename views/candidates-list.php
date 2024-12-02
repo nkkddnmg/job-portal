@@ -48,9 +48,9 @@ $pageName = "List of Candidates in $job->title";
                 <table id="applicants-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
+                      <th>Applicant Name</th>
                       <th>Title</th>
                       <th class="text-start">Date Applied</th>
-                      <th>Applicant Name</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -61,14 +61,13 @@ $pageName = "List of Candidates in $job->title";
                       $btnDropDownId = "btn-dropdown-$job->id";
                     ?>
                       <tr>
+                        <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                         <td><?= $job->title ?></td>
                         <td class="text-start"><?= date("Y-m-d H:i:s", strtotime($applicant->date_applied)) ?></td>
-                        <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                         <td>
                           <div class="dropdown">
-
-                            <button class="btn btn-default rounded-circle" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <i class='bx bx-dots-vertical-rounded' data-bs-toggle="tooltip" data-placement="top" title="More"></i>
+                            <button class="btn btn-primary btn-sm" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              More
                             </button>
 
                             <div class="dropdown-menu" aria-labelledby="<?= $btnDropDownId ?>" data-bs-popper="none">
@@ -78,7 +77,7 @@ $pageName = "List of Candidates in $job->title";
                               <button type="button" class="dropdown-item" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-profile?id=$applicant->user_id" ?>`)'>
                                 Preview Applicant Profile
                               </button>
-                              <button type="button" class="dropdown-item" onclick='handleSetInterviewDate(`<?= $applicant->id ?>`)'>
+                              <button type="button" class="dropdown-item" onclick='handleSetInterviewDate(`<?= $applicant->id ?>`, `<?= $applicant->user_id ?>`, `<?= $applicant->job_id ?>`)'>
                                 Set Interview Date
                               </button>
                             </div>
@@ -122,11 +121,25 @@ $pageName = "List of Candidates in $job->title";
     <div class="modal-dialog modal-dialog-centered">
       <form id="form-set-interview" class="modal-content">
         <input type="text" name="candidate_id" readonly hidden>
+        <input type="text" name="applicant_id" readonly hidden>
+        <input type="text" name="job_id" readonly hidden>
+
         <div class="modal-header">
           <h5 class="modal-title">Set Interview Date</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <div class="row">
+            <div class="col mb-3">
+              <label for="interview_setup" class="form-label">Setup</label>
+              <select name="setup" class="form-select" id="interview_setup" required>
+                <option value="">-- Select Setup --</option>
+                <option value="On site">On site</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col mb-3">
               <label for="interview_date" class="form-label">Date</label>
@@ -141,7 +154,7 @@ $pageName = "List of Candidates in $job->title";
           <div class="row g-2">
             <div class="col mb-0">
               <label for="time_from" class="form-label">From</label>
-              <input type="time" id="time_from" name="time_from" class="form-control" min="<?= date("H:i") ?>" placeholder="hh:mm" required />
+              <input type="time" id="time_from" name="time_from" class="form-control" placeholder="hh:mm" required />
             </div>
             <div class="col mb-0">
               <label for="time_to" class="form-label">To</label>
@@ -167,10 +180,6 @@ $pageName = "List of Candidates in $job->title";
 <?php include("../components/footer.php") ?>
 
 <script>
-  $("#time_from").on("blur", function(e) {
-    $("#time_to").attr("min", e.target.value)
-  })
-
   $("#form-set-interview").on("submit", function(e) {
     e.preventDefault();
 
@@ -202,8 +211,10 @@ $pageName = "List of Candidates in $job->title";
     });
   })
 
-  function handleSetInterviewDate(candidateID) {
+  function handleSetInterviewDate(candidateID, applicantID, jobID) {
     $("input[name='candidate_id']").val(candidateID)
+    $("input[name='applicant_id']").val(applicantID)
+    $("input[name='job_id']").val(jobID)
     $("#modalSetInterviewDate").modal("show")
   }
 

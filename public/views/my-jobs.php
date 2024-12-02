@@ -56,13 +56,15 @@ if (isset($_SESSION["id"])) {
                         <?php
                         $statusBadge = "";
 
-                        if ($my_job->status == "Applied" || $my_job->status == "Hired") {
+                        if ($my_job->status == "Applied") {
                           $statusBadge = "badge-primary";
-                        } else if ($my_job->status == "Interviewing") {
-                          $statusBadge = "badge-success";
-                        } else if ($my_job->status == "Not selected by employer") {
-                          $statusBadge = "badge-danger";
                         } else if ($my_job->status == "Withdrawn") {
+                          $statusBadge = "badge-warning";
+                        } else if ($my_job->status == "Hired") {
+                          $statusBadge = "badge-success";
+                        } else if ($my_job->status == "Not selected by employer" || $my_job->status == "Terminated" || $my_job->status == "Resigned") {
+                          $statusBadge = "badge-danger";
+                        } else if ($my_job->status == "Interviewing") {
                           $statusBadge = "badge-secondary";
                         }
 
@@ -128,7 +130,7 @@ if (isset($_SESSION["id"])) {
               <p class="mb-0 text-white lead">We Help To Get The Best Job And Find A Talent.</p>
             </div>
             <div class="col-md-3 ml-auto">
-              <a  href="javascript:void(0)" onclick="navigateSIgnUp()" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+              <a href="javascript:void(0)" onclick="navigateSIgnUp()" class="btn btn-warning btn-block btn-lg">Sign Up</a>
             </div>
           </div>
         </div>

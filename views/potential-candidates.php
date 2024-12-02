@@ -108,7 +108,7 @@ $pageName = "Potential Candidates";
                       <tr>
                         <td><?= $helpers->get_full_name($user_id) ?></td>
                         <td>
-                          <button type="button" class="btn btn-primary" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-profile?id=$user_id" ?>`)'>
+                          <button type="button" class="btn btn-primary btn-sm" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-profile?id=$user_id" ?>`)'>
                             View Profile
                           </button>
                         </td>

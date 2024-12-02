@@ -27,6 +27,7 @@
 <script src="<?= SERVER_NAME . "/public/assets/js/owl.carousel.min.js" ?>"></script>
 <script src="<?= SERVER_NAME . "/public/assets/js/bootstrap-select.min.js" ?>"></script>
 <script src="<?= SERVER_NAME . "/public/assets/js/custom.js" ?>"></script>
+<script src="<?= SERVER_NAME . "/assets/vendor/libs/editable-select/jquery-editable-select.js" ?>"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

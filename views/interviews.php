@@ -41,10 +41,11 @@ $pageName = "Interviews";
                 <table id="interview-table" class="table table-striped nowrap">
                   <thead>
                     <tr>
+                      <th>Applicant Name</th>
                       <th>Title</th>
                       <th>Job Type</th>
-                      <th>Applicant Name</th>
                       <th>Setup</th>
+                      <th>Confirmation</th>
                       <th class="text-start">Date Applied</th>
                       <th class="text-start">Interview Date</th>
                       <th class="text-start">Interview Time</th>
@@ -66,23 +67,49 @@ $pageName = "Interviews";
 
                           $time_from = date("h:i A", strtotime($post_interview_time[0]));
                           $time_to = date("h:i A", strtotime($post_interview_time[1]));
+
+                          $from = date("H:i", strtotime($post_interview_time[0]));
+                          $to = date("H:i", strtotime($post_interview_time[1]));
+
+                          $confirmation = "No response yet";
+                          $confirmationBadge = "secondary";
+
+                          if ($applicant->invitation_confirmation) {
+                            $confirmation = $applicant->invitation_confirmation;
+                            $confirmationBadge = "success";
+                          }
+
+                          if ($confirmation == "no") {
+                            $confirmationBadge = "danger";
+                          }
                     ?>
                           <tr>
+                            <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                             <td><?= $job->title ?></td>
                             <td><?= $job->type ?></td>
-                            <td><?= $helpers->get_full_name($applicant->user_id); ?></td>
                             <td><?= $applicant->setup ?></td>
+                            <td>
+                              <span class="badge rounded-pill bg-<?= $confirmationBadge ?> px-4">
+                                <?= $confirmation ?>
+                              </span>
+                            </td>
                             <td class="text-start"><?= date("Y-m-d H:i:s", strtotime($applicant->date_applied)) ?></td>
                             <td class="text-start"><?= date("Y-m-d", strtotime($applicant->interview_date)) ?></td>
                             <td><?= "$time_from - $time_to" ?></td>
                             <td>
                               <div class="dropdown">
 
-                                <button class="btn btn-default rounded-circle" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  <i class='bx bx-dots-vertical-rounded' data-bs-toggle="tooltip" data-placement="top" title="More"></i>
+                                <button class="btn btn-primary btn-sm" type="button" id="<?= $btnDropDownId ?>" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                  More
                                 </button>
 
                                 <div class="dropdown-menu" aria-labelledby="<?= $btnDropDownId ?>" data-bs-popper="none">
+                                  <?php if ($confirmation != "yes") : ?>
+                                    <button type="button" class="dropdown-item" onclick='handleSetInterviewDate(`<?= $applicant->id ?>`, `<?= $applicant->user_id ?>`, `<?= $applicant->job_id ?>`, `<?= $applicant->setup ?>`, `<?= $applicant->interview_date ?>`, `<?= $from ?>`, `<?= $to ?>`)'>
+                                      Update Interview
+                                    </button>
+                                  <?php endif; ?>
+
                                   <button type="button" class="dropdown-item" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-job?id=$job->id" ?>`)'>
                                     Preview Job
                                   </button>
@@ -96,7 +123,7 @@ $pageName = "Interviews";
                                   </button>
 
                                   <button type="button" class="dropdown-item" onclick='handleCandidateStatusSave(`<?= $applicant->id ?>`, `Not selected by employer`)'>
-                                    Set Not selected
+                                    Set Rejected
                                   </button>
                                 </div>
                               </div>
@@ -141,11 +168,22 @@ $pageName = "Interviews";
     <div class="modal-dialog modal-dialog-centered">
       <form id="form-set-interview" class="modal-content">
         <input type="text" name="candidate_id" readonly hidden>
+        <input type="text" name="applicant_id" readonly hidden>
+        <input type="text" name="job_id" readonly hidden>
+
         <div class="modal-header">
           <h5 class="modal-title">Set Interview Date</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+
         <div class="modal-body">
+          <div class="row">
+            <div class="col mb-3">
+              <label for="interview_setup" class="form-label">Setup</label>
+              <input type="text" id="interview_setup" name="setup" class="form-control" readonly required />
+            </div>
+          </div>
+
           <div class="row">
             <div class="col mb-3">
               <label for="interview_date" class="form-label">Date</label>
@@ -160,7 +198,7 @@ $pageName = "Interviews";
           <div class="row g-2">
             <div class="col mb-0">
               <label for="time_from" class="form-label">From</label>
-              <input type="time" id="time_from" name="time_from" class="form-control" min="<?= date("H:i") ?>" placeholder="hh:mm" required />
+              <input type="time" id="time_from" name="time_from" class="form-control" placeholder="hh:mm" required />
             </div>
             <div class="col mb-0">
               <label for="time_to" class="form-label">To</label>
@@ -186,6 +224,19 @@ $pageName = "Interviews";
 <?php include("../components/footer.php") ?>
 
 <script>
+  function handleSetInterviewDate(candidateID, applicantID, jobID, setup, date, from, to) {
+    $("input[name='candidate_id']").val(candidateID)
+    $("input[name='applicant_id']").val(applicantID)
+    $("input[name='job_id']").val(jobID)
+
+    $("input[name='setup']").val(setup)
+    $("input[name='interview_date']").val(date)
+    $("input[name='time_from']").val(from)
+    $("input[name='time_to']").val(to)
+
+    $("#modalSetInterviewDate").modal("show")
+  }
+
   function handleCandidateStatusSave(candidateId, action) {
     swal.showLoading()
     $.post("<?= SERVER_NAME . "/backend/nodes?action=application_status_save" ?>", {
@@ -237,11 +288,6 @@ $pageName = "Interviews";
       }
     });
   })
-
-  function handleSetInterviewDate(candidateID) {
-    $("input[name='candidate_id']").val(candidateID)
-    $("#modalSetInterviewDate").modal("show")
-  }
 
   function handleOpenModal(src) {
     $("#previewIframe").attr("src", src)

@@ -42,43 +42,46 @@ $pageName = "Hired Lists";
                   <thead>
                     <tr>
                       <th>Avatar</th>
-                      <th>First name</th>
-                      <th>Middle name</th>
-                      <th>Last name</th>
+                      <th>Company name</th>
+                      <th>Full name</th>
                       <th>Address</th>
                       <th>Email</th>
-                      <th>Date Created</th>
+                      <th>Date Hired</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     <?php
                     $qStr = "SELECT 
-                                u.*
+                              u.*,
+                              c.job_id,
+                              c.date_hired
                             FROM users u 
+                            LEFT JOIN candidates c
+                            ON c.user_id = u.id
                             WHERE u.role = 'applicant'
-                            AND u.id IN(SELECT c.user_id FROM candidates c WHERE c.status = 'Hired')";
+                            AND c.status = 'Hired'";
 
                     $hired = $helpers->custom_query($qStr);
 
                     if (count($hired) > 0) :
                       foreach ($hired as $hire) :
+                        $company = $helpers->select_custom_fields_individual("job", array("company_id"), "id='$hire->job_id'");
+                        $companyData = $helpers->select_all_individual("company", "id='$company->company_id'");
 
                         $modal_id = "hire-img-modal_$hire->id";
                         $img_id = "hire-image_$hire->id";
                         $caption_id = "hire-caption_$hire->id";
-
                     ?>
                         <tr>
                           <td class="td-image">
                             <?= $helpers->generate_modal_click_avatar($helpers->get_avatar_link($hire->id), $modal_id, $img_id, $caption_id) ?>
                           </td>
-                          <td><?= $hire->fname ?></td>
-                          <td><?= empty($hire->mname) ? "<em class='text-muted'>N/A</em>" : $hire->mname ?></td>
-                          <td><?= $hire->lname ?></td>
-                          <td><?= $hire->district ?></td>
+                          <td><?= $companyData->name ?></td>
+                          <td><?= $helpers->get_full_name($hire->id) ?></td>
+                          <td><?= "$hire->address $hire->district" ?></td>
                           <td><?= $hire->email ?></td>
-                          <td><?= date("m-d-Y", strtotime($hire->date_created)) ?></td>
+                          <td><?= date("m-d-Y", strtotime($hire->date_hired)) ?></td>
                           <td>
                             <?php if ($hire->id != $LOGIN_USER->id) : ?>
                               <button type="button" class="btn btn-primary btn-sm" onclick='handleOpenModal(`<?= SERVER_NAME . "/public/views/preview-profile?id=$hire->id" ?>`)'>

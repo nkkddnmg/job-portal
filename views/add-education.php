@@ -73,11 +73,30 @@
               </div>
               <div class="mb-3 form-group d-none" id="divCourse">
                 <label for="course" class="form-label">Course <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="course" name="course" />
+                <select name="course" class="form-select" id="courses" placeholder="Please select course">
+                  <?php
+                  $courses = $helpers->select_all("courses");
+                  if ($courses) :
+                    foreach ($courses as $course):
+                  ?>
+                      <option value="<?= $course->title ?>"><?= $course->title ?></option>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                </select>
               </div>
+
               <div class="mb-3 form-group">
-                <label for="schoolName" class="form-label">School name</label>
-                <input type="text" class="form-control" id="schoolName" name="school_name" required />
+                <label for="school" class="form-label">School name</label>
+                <select id="school" name="school_name" class="form-select" placeholder="Please select school name" required>
+                  <?php
+                  $schools = $helpers->select_all("schools");
+                  if ($schools) :
+                    foreach ($schools as $school):
+                  ?>
+                      <option value="<?= $school->name ?>"><?= $school->name ?></option>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                </select>
               </div>
               <div class="mb-3 form-group">
                 <label for="schoolYear" class="form-label">
@@ -119,6 +138,10 @@
 <?php include("../components/footer.php") ?>
 
 <script>
+  $('#courses, #school').editableSelect({
+    effects: 'slide'
+  });
+
   const handleCancel = () => {
     const searchParams = new URLSearchParams(window.location.search);
 

@@ -45,7 +45,6 @@ $pageName = "Company Verification";
                       <th>Name</th>
                       <th>Industry</th>
                       <th>Address</th>
-                      <th>Verification</th>
                       <th>Date Created</th>
                       <th>Actions</th>
                     </tr>
@@ -75,19 +74,6 @@ $pageName = "Company Verification";
                           <td><?= $company->name ?></td>
                           <td><?= $industryData ? $industryData->name : $NA ?></td>
                           <td><?= $company->district ?></td>
-                          <td>
-                            <?php if ($company->verification_id) : ?>
-                              <?php
-                              if ($verificationData->status == "pending") :
-                              ?>
-                                <span class="badge bg-label-warning me-1">Pending</span>
-                              <?php else : ?>
-                                <span class="badge bg-label-success me-1">Approved</span>
-                              <?php endif; ?>
-                            <?php else : ?>
-                              <span class="badge bg-label-danger me-1">No Verification</span>
-                            <?php endif; ?>
-                          </td>
                           <td><?= date("m-d-Y", strtotime($company->date_created)) ?></td>
                           <td>
                             <?php if ($verificationData && ($verificationData->status == "pending" || $verificationData->status == "approved")) : ?>
