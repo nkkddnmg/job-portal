@@ -52,9 +52,9 @@ $pageName = "Potential Candidates";
                   </thead>
                   <tbody>
                     <?php
-                    $potentialUserIds = array();
-
                     $job = $helpers->select_all_individual("job", "id='$_GET[id]'");
+
+                    $potentialUserIds = array();
 
                     $post_qualification = array();
                     $post_experience = array();
@@ -62,43 +62,84 @@ $pageName = "Potential Candidates";
                     if ($job->qualifications) $post_qualification = json_decode($job->qualifications, true);
                     if ($job->experience) $post_experience = json_decode($job->experience, true);
 
-                    $qualificationArray = array_merge($post_qualification, $post_experience);
+                    $userData = $helpers->select_all_with_params("users", "role = 'applicant'");
 
-                    $qualifications = array();
+                    if ($userData) {
+                      foreach ($userData as $dt) {
+                        $noExpNeeded = false;
 
-                    $job_qualifications = $helpers->select_all_with_params("experience_list", "id IN (" . (implode(', ', $qualificationArray)) . ")");
+                        if ($post_experience) {
+                          foreach ($post_experience as $expId) {
+                            $expData = $helpers->select_all_individual("experience_list", "id = '$expId'");
 
-                    foreach ($job_qualifications as $job_qualification) {
-                      array_push($qualifications, $job_qualification->name);
-                    }
-
-                    foreach ($qualifications as $qualification) {
-                      if ($qualification == "No Experience Needed") {
-                        $getUserNoExp = $helpers->custom_query("SELECT u.*, we.user_id FROM users u LEFT JOIN work_experience we ON we.user_id=u.id WHERE we.id IS NULL AND u.role = 'applicant'");
-
-                        if (count($getUserNoExp) > 0) {
-                          foreach ($getUserNoExp as $userNoExp) {
-                            array_push($potentialUserIds, $userNoExp->id);
+                            if ($expData) {
+                              if ($expData->name == "No Experience Needed") {
+                                $noExpNeeded = true;
+                                break;
+                              }
+                            }
                           }
                         }
-                      } else {
-                        $potentialQ = $helpers->select_all_with_params("work_experience", "LOWER(job_title) LIKE LOWER('$qualification')");
 
-                        foreach ($potentialQ as $potential) {
-                          if (!in_array($potential->user_id, $potentialUserIds)) {
-                            array_push($potentialUserIds, $potential->user_id);
+                        if ($noExpNeeded) {
+                          if (!in_array($dt->id, $potentialUserIds)) {
+                            array_push($potentialUserIds, $dt->id);
+                          }
+                        } else {
+                          $workExp = $helpers->select_all_with_params("work_experience", "user_id = '$dt->id'");
+
+                          if ($workExp) {
+                            foreach ($workExp as $exp) {
+                              if ($post_experience) {
+                                if (in_array($exp->id, $post_experience)) {
+                                  if (!in_array($dt->id, $potentialUserIds)) {
+                                    array_push($potentialUserIds, $dt->id);
+                                  }
+                                }
+                              }
+
+                              $post_industry = json_decode($job->industries, true);
+
+                              if ($post_industry) {
+                                if (in_array($exp->industry_id, $post_industry)) {
+                                  if (!in_array($dt->id, $potentialUserIds)) {
+                                    array_push($potentialUserIds, $dt->id);
+                                  }
+                                }
+                              }
+                            }
                           }
                         }
-                      }
-                    }
 
-                    $company = $helpers->select_all_individual("company", "id='$job->company_id'");
+                        $skillData = $helpers->select_all_with_params("applicant_skills", "user_id='$dt->id'");
 
-                    $userInSameDistricts = $helpers->select_all_with_params("users", "role = 'applicant' AND district LIKE '%$company->district%'");
+                        if ($skillData) {
+                          foreach ($skillData as $skill) {
+                            if (in_array($skill->skill_id, $post_qualification)) {
+                              if (!in_array($dt->id, $potentialUserIds)) {
+                                array_push($potentialUserIds, $dt->id);
+                              }
+                            }
+                          }
+                        }
 
-                    if (count($userInSameDistricts) > 0) {
-                      foreach ($userInSameDistricts as $userIsSameDistrict) {
-                        array_push($potentialUserIds, $userIsSameDistrict->id);
+                        $jobPreferences = $helpers->select_all_with_params("job_preference", "user_id='$dt->id'");
+
+                        foreach ($jobPreferences as $jobPreference) {
+                          if ($jobPreference->job_title) {
+                            foreach (json_decode($jobPreference->job_title, true) as $jobTitle) {
+                              $explodedTitle = explode(" ", $jobTitle);
+
+                              foreach ($explodedTitle as $chunk_title) {
+                                if (is_numeric(strpos($job->title, $chunk_title))) {
+                                  if (!in_array($dt->id, $potentialUserIds)) {
+                                    array_push($potentialUserIds, $dt->id);
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
 

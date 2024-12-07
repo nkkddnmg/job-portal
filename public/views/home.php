@@ -46,7 +46,7 @@ if (isset($_SESSION["id"])) {
                 </div>
               </div>
               <?php
-              $top5Keywords = $helpers->custom_query("SELECT keywords FROM search_keywords WHERE keywords <> '' GROUP BY keywords ORDER BY count(*) DESC LIMIT 5");
+              /*$top5Keywords = $helpers->custom_query("SELECT keywords FROM search_keywords WHERE keywords <> '' GROUP BY keywords ORDER BY count(*) DESC LIMIT 5");
 
               if (count($top5Keywords) > 0) :
               ?>
@@ -64,7 +64,7 @@ if (isset($_SESSION["id"])) {
                     </ul>
                   </div>
                 </div>
-              <?php endif; ?>
+              <?php endif; */ ?>
             </form>
           </div>
         </div>
@@ -133,7 +133,6 @@ if (isset($_SESSION["id"])) {
     <?php if ($LOGIN_USER) : ?>
       <section class="site-section py-4" id="jobPostings">
         <div class="container">
-
           <?php
           $jobIds = array();
 
@@ -167,6 +166,24 @@ if (isset($_SESSION["id"])) {
             }
           }
 
+          $workExp = $helpers->select_all_with_params("work_experience", "user_id = '$LOGIN_USER->id'");
+
+          if ($workExp) {
+            foreach ($workExp as $exp) {
+              $jobBaseIndustry = $helpers->select_all_with_params("job", "industries LIKE '%$exp->industry_id%' AND status='active'");
+              addIdsBaseOnIndustry($jobBaseIndustry);
+            }
+          }
+
+          $skillData = $helpers->select_all_with_params("applicant_skills", "user_id='$LOGIN_USER->id'");
+
+          if ($skillData) {
+            foreach ($skillData as $skill) {
+              $jobBaseQualification = $helpers->select_all_with_params("job", "qualifications LIKE '%$skill->skill_id%' AND status='active'");
+              handleAddIds($jobBaseQualification);
+            }
+          }
+
           $jobPreferences = $helpers->select_all_with_params("job_preference", "user_id='$LOGIN_USER->id'");
 
           foreach ($jobPreferences as $jobPreference) {
@@ -174,72 +191,12 @@ if (isset($_SESSION["id"])) {
               foreach (json_decode($jobPreference->job_title, true) as $jobTitle) {
                 $explodedTitle = explode(" ", $jobTitle);
 
-                foreach ($explodedTitle as $dt) {
-                  $jobs = $helpers->select_all_with_params("job", "LOWER(title) LIKE LOWER('%$dt%') AND status='active'");
+                foreach ($explodedTitle as $chunk_title) {
+                  $jobs = $helpers->select_all_with_params("job", "LOWER(title) LIKE LOWER('%$chunk_title%') AND status='active'");
                   handleAddIds($jobs);
                   addIdsBaseOnIndustry($jobs);
                 }
               }
-            }
-
-            if ($jobPreference->job_types) {
-              foreach (json_decode($jobPreference->job_types, true) as $jobType) {
-                $jobs = $helpers->select_all_with_params("job", "LOWER(type) LIKE LOWER('%$jobType%') AND status='active'");
-                handleAddIds($jobs);
-              }
-            }
-
-            if ($jobPreference->work_schedules) {
-              $workSchedule = json_decode($jobPreference->work_schedules, true);
-
-              $days = isset($workSchedule["days"]) ? $workSchedule["days"] : null;
-              $shifts = isset($workSchedule["shifts"]) ? $workSchedule["shifts"] : null;
-              $schedules = isset($workSchedule["schedules"]) ? $workSchedule["schedules"] : null;
-
-              if ($days) {
-                foreach ($days as $day) {
-                  $jobs = $helpers->select_all_with_params("job", "LOWER(schedule) LIKE LOWER('%$day%') AND status='active'");
-                  handleAddIds($jobs);
-                }
-              }
-
-              if ($shifts) {
-                foreach ($shifts as $shift) {
-                  $jobs = $helpers->select_all_with_params("job", "LOWER(schedule) LIKE LOWER('%$shift%') AND status='active'");
-                  handleAddIds($jobs);
-                }
-              }
-
-              if ($schedules) {
-                foreach ($schedules as $schedule) {
-                  $jobs = $helpers->select_all_with_params("job", "LOWER(schedule) LIKE LOWER('%$schedule%') AND status='active'");
-                  handleAddIds($jobs);
-                }
-              }
-            }
-
-            if ($jobPreference->location_type) {
-              foreach (json_decode($jobPreference->location_type, true) as $locationType) {
-                $jobs = $helpers->select_all_with_params("job", "LOWER(location_type) LIKE LOWER('%$locationType%') AND status='active'");
-                handleAddIds($jobs);
-              }
-            }
-          }
-
-          $workExp = $helpers->select_all_with_params("work_experience", "user_id = '$LOGIN_USER->id'");
-
-          if ($workExp) {
-            foreach($workExp as $exp) {
-              $jobBaseIndustry = $helpers->select_all_with_params("job", "industries LIKE '%$exp->industry_id%' AND status='active'");
-              addIdsBaseOnIndustry($jobs);
-            }
-          }
-
-          $jobList = $helpers->custom_query("SELECT j.*, c.district FROM job j LEFT JOIN company c ON c.id=j.company_id WHERE j.status <> 'inactive';");
-
-          foreach ($jobList as $job) {
-            if ($job->district == $LOGIN_USER->district) {
-              array_push($jobIds, $job->id);
             }
           }
 
@@ -257,7 +214,7 @@ if (isset($_SESSION["id"])) {
                 $job = $helpers->select_all_individual("job", "id='$jobId'");
                 $company = $helpers->select_all_individual("company", "id='$job->company_id'");
               ?>
-                <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+                <li class="job-listing d-flex pb-3 pb-sm-0 align-items-center">
                   <a href="<?= SERVER_NAME . "/public/views/job-details?id=$job->id" ?>"></a>
                   <div class="job-listing-logo">
                     <img src="<?= $helpers->get_company_logo_link($company->id) ?>" class="img-fluid">
@@ -291,6 +248,8 @@ if (isset($_SESSION["id"])) {
                 </li>
               <?php endforeach; ?>
             </ul>
+            <div id="pagination-container"></div>
+
           <?php else : ?>
             <h3 class="text-center">No Recommended Job Posted Yet</h3>
           <?php endif; ?>
@@ -400,6 +359,28 @@ if (isset($_SESSION["id"])) {
   <!-- SCRIPTS -->
   <?php include("../components/footer.php") ?>
   <script>
+    var items = $(".job-listings .job-listing");
+    var numItems = items.length;
+    var perPage = 5;
+
+    items.slice(perPage).addClass("d-none").removeClass("d-flex");
+
+    console.log(items.length)
+    $('#pagination-container').pagination({
+      items: numItems,
+      itemsOnPage: perPage,
+      prevText: "&laquo;",
+      nextText: "&raquo;",
+      onPageClick: function(pageNumber) {
+        var showFrom = perPage * (pageNumber - 1);
+        var showTo = showFrom + perPage;
+
+        items.addClass("d-none").removeClass("d-flex");
+        items.slice(showFrom, showTo).addClass("d-flex").removeClass("d-none");
+      }
+    });
+
+
     $("#form-search").on("submit", function(e) {
       e.preventDefault()
 

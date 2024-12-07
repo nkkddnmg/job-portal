@@ -260,7 +260,7 @@ if (isset($_SESSION["id"])) {
                       <div class="card-body">
                         <p class=" text-dark">
                           <?= "School: " . $education->school_name ?> <br>
-                          <?= "SY: " . $education->sy ?>
+                          <?= "Year Graduated: " . $education->sy ?>
                         </p>
                       </div>
                     </div>

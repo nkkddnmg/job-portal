@@ -46,7 +46,7 @@ if (isset($_SESSION["id"])) {
                 </div>
               </div>
               <?php
-              $top5Keywords = $helpers->custom_query("SELECT keywords FROM search_keywords GROUP BY keywords ORDER BY count(*) DESC LIMIT 5");
+              /*$top5Keywords = $helpers->custom_query("SELECT keywords FROM search_keywords GROUP BY keywords ORDER BY count(*) DESC LIMIT 5");
 
               if (count($top5Keywords) > 0) :
               ?>
@@ -64,7 +64,7 @@ if (isset($_SESSION["id"])) {
                     </ul>
                   </div>
                 </div>
-              <?php endif; ?>
+              <?php endif; */?>
             </form>
           </div>
         </div>

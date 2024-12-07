@@ -88,6 +88,10 @@ if (isset($_SESSION["id"])) {
                             <button class="dropdown-item" onclick='handleCandidateStatusSave(`<?= $my_job->id ?>`, `Withdrawn`)' <?= $my_job->status != "Applied" ? "disabled" : "" ?>>
                               Withdraw Application
                             </button>
+
+                            <button class="dropdown-item" onclick='handleRate(`<?= $company->id ?>`, `<?= $company->name ?>`)'>
+                              Rate
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -143,6 +147,217 @@ if (isset($_SESSION["id"])) {
   <!-- SCRIPTS -->
   <?php include("../components/footer.php") ?>
   <script>
+    function nl2br(str, is_xhtml) {
+      var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
+      return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+    }
+
+    function handleRate(id, name) {
+      swal.showLoading();
+
+      getRateData(id).then((d) => {
+        const rateData = $.parseJSON(d)
+
+        let btnManagementStars = "";
+        let btnWorkLifeStars = "";
+        let btnSalaryStars = "";
+
+        for (let i = 1; i <= 5; i++) {
+          let managementWarning = rateData && Number(rateData.management) >= i ? "btn-warning" : "";
+          let workLifeBalanceWarning = rateData && Number(rateData.work_life_balance) >= i ? "btn-warning" : "";
+          let salaryWarning = rateData && Number(rateData.salary_benefits) >= i ? "btn-warning" : "";
+
+          btnManagementStars += `
+                <button type="button" class="btn-management-${id} btn btn-outline-secondary btn-lg mx-1 ${managementWarning}" data-attr="${i}" id="${id}-management-star-${i}">
+                  <i class="bx bxs-star" aria-hidden="true"></i>
+                </button>`;
+
+          btnWorkLifeStars += `
+                <button type="button" class="btn-work_life_balance-${id} btn btn-outline-secondary btn-lg mx-1 ${workLifeBalanceWarning}" data-attr="${i}" id="${id}-work_life_balance-star-${i}">
+                  <i class="bx bxs-star" aria-hidden="true"></i>
+                </button>`;
+
+          btnSalaryStars += `
+                <button type="button" class="btn-salary_benefits-${id} btn btn-outline-secondary btn-lg mx-1 ${salaryWarning}" data-attr="${i}" id="${id}-salary_benefits-star-${i}">
+                  <i class="bx bxs-star" aria-hidden="true"></i>
+                </button>`;
+
+        }
+
+        const rateHtml = `
+            <input type="text" id="company_id_${id}" value="${id}" readonly hidden>
+            <div class="row justify-content-center">
+              <div class="form-group text-center mb-3" id="rating-ability-wrapper">
+                <div class="text-start w-100">
+                  <strong>Management</strong>
+
+                  <div class="mt-2">
+                    ${btnManagementStars}
+                    <small class="bold rating-header">
+                      <span class="management-rating-${id}">${rateData ? rateData.management : "0"}</span><small> / 5</small>
+                    </small>
+                  </div>
+                </div>
+                
+                <input type="text" id="management${id}" value="${rateData ? rateData.management : ""}" name="management" hidden>
+              </div>
+
+              <div class="form-group text-center mb-3" id="rating-ability-wrapper">
+                <div class="text-start w-100">
+                  <strong>Work/ Life Balance</strong>
+
+                  <div class="mt-2">
+                    ${btnWorkLifeStars}
+                    <small class="bold rating-header">
+                      <span class="work_life_balance-rating-${id}">${rateData ? rateData.work_life_balance : "0"}</span><small> / 5</small>
+                    </small>
+                  </div>
+                </div>
+                
+                <input type="text" id="work_life_balance${id}" value="${rateData ? rateData.work_life_balance : ""}" name="work_life_balance" hidden>
+              </div>
+
+              <div class="form-group text-center mb-3" id="rating-ability-wrapper">
+                <div class="text-start w-100">
+                  <strong>Salary/ Benefits</strong>
+
+                  <div class="mt-2">
+                    ${btnSalaryStars}
+                    <small class="bold rating-header">
+                      <span class="salary_benefits-rating-${id}">${rateData ? rateData.salary_benefits : "0"}</span><small> / 5</small>
+                    </small>
+                  </div>
+                </div>
+                
+                <input type="text" id="salary_benefits${id}" value="${rateData ? rateData.salary_benefits : ""}" name="salary_benefits" hidden>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label for="feedback" class="form-label">Feedback</label>
+              <textarea class="form-control" id="feedback_${id}" name="feedback" rows="3" required>${rateData ? rateData.feedback : ""}</textarea>
+            </div>`;
+
+        swal.fire({
+          title: `Rate ${name}`,
+          html: rateHtml,
+          confirmButtonText: "Submit",
+          showDenyButton: true,
+          denyButtonText: "Cancel",
+          customClass: {
+            htmlContainer: 'swal-custom-container',
+          },
+          allowOutsideClick: false,
+          preConfirm: () => {
+            if (!$(`#management${id}`).val() || !$(`#work_life_balance${id}`).val() || !$(`#salary_benefits${id}`).val()) {
+              swal.showValidationMessage(`Please select rating`);
+            } else if (!$(`#feedback_${id}`).val()) {
+              swal.showValidationMessage(`Please add feedback`);
+            } else {
+              return true
+            }
+          }
+        }).then((d) => {
+          swal.close();
+          swal.showLoading();
+
+          if (d.isConfirmed) {
+            const companyId = $(`#company_id_${id}`).val()
+            const management = $(`#management${id}`).val()
+            const work_life_balance = $(`#work_life_balance${id}`).val()
+            const salary_benefits = $(`#salary_benefits${id}`).val()
+            const feedback = $(`#feedback_${id}`).val()
+
+            $.post(
+              "<?= SERVER_NAME . "/backend/nodes?action=add_company_rating" ?>", {
+                company_id: companyId,
+                management: management,
+                work_life_balance: work_life_balance,
+                salary_benefits: salary_benefits,
+                feedback: feedback
+              },
+              (data, status) => {
+                const resp = $.parseJSON(data)
+
+                swal.fire({
+                  title: resp.success ? "Success" : "Error",
+                  html: resp.message,
+                  icon: resp.success ? "success" : "error",
+                }).then(() => resp.success ? window.location.reload() : undefined)
+              }
+            )
+          }
+        })
+
+        $(`.btn-management-${id}`).on('click', (function(e) {
+
+          var previous_value = $(`#management${id}`).val();
+
+          var selected_value = $(this).attr("data-attr");
+          $(`#management${id}`).val(selected_value);
+
+          $(`.management-rating-${id}`).empty();
+          $(`.management-rating-${id}`).html(selected_value);
+
+          for (i = 1; i <= selected_value; ++i) {
+            $(`#${id}-management-star-${i}`).toggleClass('btn-warning');
+          }
+
+          for (ix = 1; ix <= previous_value; ++ix) {
+            $(`#${id}-management-star-${ix}`).toggleClass('btn-warning');
+          }
+        }));
+
+        $(`.btn-work_life_balance-${id}`).on('click', (function(e) {
+
+          var previous_value = $(`#work_life_balance${id}`).val();
+
+          var selected_value = $(this).attr("data-attr");
+          $(`#work_life_balance${id}`).val(selected_value);
+
+          $(`.work_life_balance-rating-${id}`).empty();
+          $(`.work_life_balance-rating-${id}`).html(selected_value);
+
+          for (i = 1; i <= selected_value; ++i) {
+            $(`#${id}-work_life_balance-star-${i}`).toggleClass('btn-warning');
+          }
+
+          for (ix = 1; ix <= previous_value; ++ix) {
+            $(`#${id}-work_life_balance-star-${ix}`).toggleClass('btn-warning');
+          }
+        }));
+
+        $(`.btn-salary_benefits-${id}`).on('click', (function(e) {
+
+          var previous_value = $(`#salary_benefits${id}`).val();
+
+          var selected_value = $(this).attr("data-attr");
+          $(`#salary_benefits${id}`).val(selected_value);
+
+          $(`.salary_benefits-rating-${id}`).empty();
+          $(`.salary_benefits-rating-${id}`).html(selected_value);
+
+          for (i = 1; i <= selected_value; ++i) {
+            $(`#${id}-salary_benefits-star-${i}`).toggleClass('btn-warning');
+          }
+
+          for (ix = 1; ix <= previous_value; ++ix) {
+            $(`#${id}-salary_benefits-star-${ix}`).toggleClass('btn-warning');
+          }
+        }));
+      })
+    }
+
+    async function getRateData(companyId) {
+      return await $.post(
+        "<?= SERVER_NAME . "/backend/nodes?action=get_company_rating" ?>", {
+          company_id: companyId
+        },
+        (data, status) => {
+          return $.parseJSON(data)
+        }
+      )
+    }
+
     function handleCandidateStatusSave(candidateId, action) {
       swal.showLoading()
       $.post("<?= SERVER_NAME . "/backend/nodes?action=application_status_save" ?>", {

@@ -49,28 +49,7 @@ $pageName = "Dashboard";
                   </div>
                 </a>
               </div>
-              <div class="col-md-3">
-                <a href="<?= SERVER_NAME . "/views/admin/pending-verification" ?>">
-                  <div class="card">
-                    <div class="card-body px-3">
-                      <?php
-                      $pendingString = "SELECT 
-                                      c.verification_id,
-                                      c.name,
-                                      v.status
-                                      FROM company c
-                                      INNER JOIN verification v 
-                                      ON c.verification_id = v.id
-                                      WHERE v.status = 'pending'";
 
-                      $pendingCompany = $conn->query($pendingString);
-                      ?>
-                      <span class="fw-semibold d-block mb-1">Pending Company Verification</span>
-                      <h3 class="card-title mb-2 text-center"><?= $pendingCompany->num_rows ?></h3>
-                    </div>
-                  </div>
-                </a>
-              </div>
               <div class="col-md-3">
                 <a href="<?= SERVER_NAME . "/views/admin/employers" ?>">
                   <div class="card">
@@ -86,6 +65,7 @@ $pageName = "Dashboard";
                   </div>
                 </a>
               </div>
+              
               <div class="col-md-3">
                 <a href="<?= SERVER_NAME . "/views/admin/companies" ?>">
                   <div class="card">
@@ -108,6 +88,31 @@ $pageName = "Dashboard";
                   </div>
                 </a>
               </div>
+
+              <div class="col-md-3">
+                <a href="<?= SERVER_NAME . "/views/admin/pending-verification" ?>">
+                  <div class="card">
+                    <div class="card-body px-3">
+                      <?php
+                      $pendingString = "SELECT 
+                                      c.verification_id,
+                                      c.name,
+                                      v.status
+                                      FROM company c
+                                      INNER JOIN verification v 
+                                      ON c.verification_id = v.id
+                                      WHERE v.status = 'pending'";
+
+                      $pendingCompany = $conn->query($pendingString);
+                      ?>
+                      <span class="fw-semibold d-block mb-1">Pending Company Verification</span>
+                      <h3 class="card-title mb-2 text-center"><?= $pendingCompany->num_rows ?></h3>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+
             </div>
 
             <div class="card mt-2">

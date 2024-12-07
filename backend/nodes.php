@@ -137,6 +137,12 @@ try {
       case "add_certificate":
         add_certificate();
         break;
+      case "get_company_rating":
+        get_company_rating();
+        break;
+      case "add_company_rating":
+        add_company_rating();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -149,6 +155,63 @@ try {
   $response["success"] = false;
   $response["message"] = $e->getMessage();
   $helpers->return_response($response);
+}
+
+function add_company_rating()
+{
+  global $helpers, $_SESSION, $_POST, $conn;
+
+  $rated_by = $_SESSION["id"];
+  $company_id = $_POST["company_id"];
+  $management = $_POST["management"];
+  $work_life_balance = $_POST["work_life_balance"];
+  $salary_benefits = $_POST["salary_benefits"];
+  $feedback = $_POST["feedback"];
+
+  $comm = null;
+  $action = "added";
+
+  $rateRes = $helpers->select_all_individual("company_ratings", "company_id='$company_id' AND rated_by='$rated_by'");
+
+  if ($rateRes) {
+    $comm = $conn->query("UPDATE company_ratings SET management='$management', work_life_balance='$work_life_balance', salary_benefits='$salary_benefits', feedback='$feedback' WHERE company_id ='$company_id' AND rated_by='$rated_by'");
+    $action = "updated";
+  } else {
+    $rateData = array(
+      "rated_by" => $rated_by,
+      "company_id" =>  $company_id,
+      "management" => $management,
+      "work_life_balance" => $work_life_balance,
+      "salary_benefits" => $salary_benefits,
+      "feedback" => $feedback,
+    );
+    $comm = $helpers->insert("company_ratings", $rateData);
+    $action = "added";
+  }
+
+  if ($comm) {
+    $response["success"] = true;
+    $response["message"] = "Ratings successfully $action";
+  } else {
+    $response["success"] = false;
+    $response["message"] = $conn->error;
+  }
+
+  $helpers->return_response($response);
+
+  $helpers->return_response($_POST);
+}
+
+function get_company_rating()
+{
+  global $helpers, $_SESSION, $_POST;
+
+  $rated_by = $_SESSION["id"];
+  $company_id = $_POST["company_id"];
+
+  $rateRes = $helpers->select_all_individual("company_ratings", "company_id='$company_id' AND rated_by='$rated_by'");
+
+  $helpers->return_response($rateRes ?  $rateRes : null);
 }
 
 function add_certificate()

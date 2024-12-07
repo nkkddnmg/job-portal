@@ -65,6 +65,9 @@
               <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/my-jobs" ?>">My Jobs</a>
             </li>
             <li class="d-lg-none">
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/trending-keywords" ?>">Trending Keywords</a>
+            </li>
+            <li class="d-lg-none">
               <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
             </li>
           <?php endif; ?>
@@ -88,6 +91,7 @@
               </h4>
               <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/profile" ?>">My Profile</a>
               <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/my-jobs" ?>">My Jobs</a>
+              <a class="dropdown-item" href="<?= SERVER_NAME . "/public/views/trending-keywords" ?>">Trending Keywords</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="<?= SERVER_NAME . "/backend/nodes?action=logout" ?>">Logout</a>
             </div>

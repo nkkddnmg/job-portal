@@ -219,6 +219,14 @@ class Helpers
           "is_logged_in_required" => false,
         )
       ),
+      array(
+        "title" => "Trending Keywords",
+        "config" => array(
+          "url" => (SERVER_NAME . "/public/views/trending-keywords"),
+          "is_dropdown" => false,
+          "is_logged_in_required" => false,
+        )
+      ),
       // array(
       //   "title" => "Company Reviews",
       //   "config" => array(

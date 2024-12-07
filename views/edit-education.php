@@ -49,7 +49,7 @@
               </div>
               <div class="mb-3 form-group">
                 <label for="schoolYear" class="form-label">
-                  School Year
+                  Year Graduated
                   <small class="text-muted"> ex. <?= date("y", strtotime("-1 year")) . date("y") ?>
                   </small>
                 </label>
