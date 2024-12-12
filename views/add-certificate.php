@@ -31,7 +31,7 @@
 
                 <div class="mb-3 form-group">
                   <label for="contact" class="form-label">Date Acquired</label>
-                  <input class="form-control" type="text" id="acquired" name="acquired" required>
+                  <input class="form-control" type="date" id="acquired" name="acquired" required>
                 </div>
 
                 <div class="mb-3 form-group">

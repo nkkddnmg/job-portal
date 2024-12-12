@@ -65,10 +65,10 @@ class Helpers
           )
         ),
         array(
-          "title" => "Forecasting",
+          "title" => "Projection",
           "config" => array(
             "icon" => "bx bx-line-chart",
-            "url" => (SERVER_NAME . "/views/admin/forecasting"),
+            "url" => (SERVER_NAME . "/views/admin/projection"),
             "is_dropdown" => false
           )
         ),

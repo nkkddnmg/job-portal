@@ -65,7 +65,7 @@ $pageName = "Dashboard";
                   </div>
                 </a>
               </div>
-              
+
               <div class="col-md-3">
                 <a href="<?= SERVER_NAME . "/views/admin/companies" ?>">
                   <div class="card">
@@ -189,14 +189,11 @@ if (count($industries) > 0) {
     for ($i = 1; $i <= 12; $i++) {
       $comm = $conn->query("SELECT 
                             j.title,
-                            j.date_created,
-                            c.industry_id,
-                            c.name
+                            j.date_created
                             FROM job j 
-                            LEFT JOIN company c
-                            ON c.id=j.company_id
                             WHERE MONTH(j.date_created)='$i'
-                            AND c.industry_id='$industry->id'
+                            AND JSON_CONTAINS(j.industries, '$industry->id', '$')
+                            AND j.status <> 'inactive'
                             ");
 
       array_push($seriesData["data"], $comm->num_rows);

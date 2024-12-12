@@ -143,6 +143,9 @@ try {
       case "add_company_rating":
         add_company_rating();
         break;
+      case "get_line_chart":
+        get_line_chart();
+        break;
       default:
         $response["success"] = false;
         $response["message"] = "Case action not found!";
@@ -155,6 +158,148 @@ try {
   $response["success"] = false;
   $response["message"] = $e->getMessage();
   $helpers->return_response($response);
+}
+
+function get_line_chart()
+{
+  global $helpers, $_POST, $conn;
+
+  $quarter = $_POST["quarter"];
+  $industry_id = $_POST["industry_id"];
+  $year = $_POST["year"];
+
+  $formattedQuarter = "";
+  switch ($quarter) {
+    case "1":
+      $formattedQuarter = "1st Quarter";
+      break;
+    case "2":
+      $formattedQuarter = "2nd Quarter";
+      break;
+    case "3":
+      $formattedQuarter = "3rd Quarter";
+      break;
+    case "4":
+      $formattedQuarter = "4th Quarter";
+      break;
+    case "5":
+      $formattedQuarter = "whole year";
+      break;
+  }
+
+  $months = array(
+    array("$year-01-01", "$year-02-01", "$year-03-01"),
+    array("$year-04-01", "$year-05-01", "$year-06-01"),
+    array("$year-07-01", "$year-08-01", "$year-09-01"),
+    array("$year-10-01", "$year-11-01", "$year-12-01"),
+    array(
+      "$year-01-01",
+      "$year-02-01",
+      "$year-03-01",
+      "$year-04-01",
+      "$year-05-01",
+      "$year-06-01",
+      "$year-07-01",
+      "$year-08-01",
+      "$year-09-01",
+      "$year-10-01",
+      "$year-11-01",
+      "$year-12-01"
+    ),
+  );
+
+  $selectedQuarter = $months[intval($quarter) - 1];
+
+  $startSelectedQuarter = $selectedQuarter[0];
+  $endSelectedQuarter = date("Y-m-t", strtotime(end($months[intval($quarter) - 1])));
+
+  $res = array(
+    "quarter" => "--",
+    "year" => "--",
+    "line_data" => array(),
+  );
+
+  foreach ($selectedQuarter as $quarterDate) {
+    $lastDateOfMonth = date("Y-m-t", strtotime($quarterDate));
+    $month = date("M", strtotime($quarterDate));
+
+    $query = $conn->query(
+      "SELECT 
+          j.title,
+          j.industries,
+          j.date_created
+        FROM job j 
+        WHERE j.date_created BETWEEN '$quarterDate' AND '$lastDateOfMonth'
+        AND JSON_CONTAINS(j.industries, '$industry_id', '$')
+        AND j.status <> 'inactive'"
+    );
+
+    $res["line_data"][$month] = $query->num_rows;
+  }
+
+  $byYearQ = "SELECT 
+                j.title, 
+                COUNT(j.title) AS 'count', 
+                MAX(j.date_created) AS latest_date
+              FROM job j
+              WHERE YEAR(j.date_created)='$year'
+                AND JSON_CONTAINS(j.industries, '$industry_id', '$')
+                AND j.status <> 'inactive'
+              GROUP BY LOWER(j.title)
+              HAVING COUNT(j.title) = (
+                  SELECT MAX(count) FROM (
+                      SELECT 
+                        COUNT(j.title) AS count
+                      FROM job j
+                      WHERE YEAR(j.date_created)='$year'
+                        AND JSON_CONTAINS(j.industries, '$industry_id', '$')
+                        AND j.status <> 'inactive'
+                      GROUP BY LOWER(j.title)
+                  ) subquery
+              )
+              ORDER BY latest_date DESC LIMIT 1;";
+
+  $byYear = $conn->query($byYearQ);
+
+  if ($byYear->num_rows > 0) {
+    $byYearData = $byYear->fetch_object();
+    $res["year"] = "<strong>$byYearData->count $byYearData->title</strong> Job Postings from the Year <strong>$year</strong>";
+  }
+
+  $byQuarterQ = "SELECT 
+                  j.title, 
+                  COUNT(j.title) AS 'count', 
+                  MAX(j.date_created) AS latest_date
+                FROM job j
+                WHERE j.date_created BETWEEN '$startSelectedQuarter' AND '$endSelectedQuarter'
+                  AND JSON_CONTAINS(j.industries, '$industry_id', '$')
+                  AND j.status <> 'inactive'
+                GROUP BY LOWER(j.title)
+                HAVING COUNT(j.title) = (
+                    SELECT MAX(count) FROM (
+                        SELECT 
+                          COUNT(j.title) AS count
+                        FROM job j
+                        WHERE j.date_created BETWEEN '$startSelectedQuarter' AND '$endSelectedQuarter'
+                          AND JSON_CONTAINS(j.industries, '$industry_id', '$')
+                          AND j.status <> 'inactive'
+                        GROUP BY LOWER(j.title)
+                    ) subquery
+                )
+                ORDER BY latest_date DESC LIMIT 1;";
+
+  $byQuarter = $conn->query($byQuarterQ);
+
+  if ($byQuarter->num_rows > 0) {
+    $byQuarterData = $byQuarter->fetch_object();
+    if ($quarter == 5) {
+      $res["quarter"] = "<strong>$byQuarterData->count $byQuarterData->title</strong> Job Postings of <strong>$formattedQuarter</strong> <strong>$year</strong>";
+    } else {
+      $res["quarter"] = "<strong>$byQuarterData->count $byQuarterData->title</strong> Job Postings from <strong>$formattedQuarter</strong> of Year <strong>$year</strong>";
+    }
+  }
+
+  $helpers->return_response($res);
 }
 
 function add_company_rating()

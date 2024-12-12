@@ -157,9 +157,11 @@ if (isset($_SESSION["id"])) {
               foreach ($jobs as $job) {
                 if ($job->industries) {
                   $jobIndustries = json_decode($job->industries, true);
-                  foreach ($jobIndustries as $industry_id) {
-                    $jobsByIndustryData = $helpers->select_all_with_params("job", "industries LIKE '%$industry_id%' AND status='active'");
-                    handleAddIds($jobsByIndustryData);
+                  if ($jobIndustries) {
+                    foreach ($jobIndustries as $industry_id) {
+                      $jobsByIndustryData = $helpers->select_all_with_params("job", "JSON_CONTAINS(industries, '$industry_id', '$') AND status='active'");
+                      handleAddIds($jobsByIndustryData);
+                    }
                   }
                 }
               }
@@ -170,7 +172,7 @@ if (isset($_SESSION["id"])) {
 
           if ($workExp) {
             foreach ($workExp as $exp) {
-              $jobBaseIndustry = $helpers->select_all_with_params("job", "industries LIKE '%$exp->industry_id%' AND status='active'");
+              $jobBaseIndustry = $helpers->select_all_with_params("job", "JSON_CONTAINS(industries, '$exp->industry_id', '$') AND status='active'");
               addIdsBaseOnIndustry($jobBaseIndustry);
             }
           }
@@ -186,15 +188,17 @@ if (isset($_SESSION["id"])) {
 
           $jobPreferences = $helpers->select_all_with_params("job_preference", "user_id='$LOGIN_USER->id'");
 
-          foreach ($jobPreferences as $jobPreference) {
-            if ($jobPreference->job_title) {
-              foreach (json_decode($jobPreference->job_title, true) as $jobTitle) {
-                $explodedTitle = explode(" ", $jobTitle);
+          if ($jobPreferences) {
+            foreach ($jobPreferences as $jobPreference) {
+              if ($jobPreference->job_title) {
+                foreach (json_decode($jobPreference->job_title, true) as $jobTitle) {
+                  $explodedTitle = explode(" ", $jobTitle);
 
-                foreach ($explodedTitle as $chunk_title) {
-                  $jobs = $helpers->select_all_with_params("job", "LOWER(title) LIKE LOWER('%$chunk_title%') AND status='active'");
-                  handleAddIds($jobs);
-                  addIdsBaseOnIndustry($jobs);
+                  foreach ($explodedTitle as $chunk_title) {
+                    $jobs = $helpers->select_all_with_params("job", "LOWER(title) LIKE LOWER('%$chunk_title%') AND status='active'");
+                    handleAddIds($jobs);
+                    addIdsBaseOnIndustry($jobs);
+                  }
                 }
               }
             }
@@ -210,7 +214,36 @@ if (isset($_SESSION["id"])) {
           <?php if (count($uniqueJobs) > 0) : ?>
             <ul class="job-listings mb-5">
               <?php
-              foreach ($uniqueJobs as $jobId) :
+              $arrJobTitles = array();
+              $newJobIds = array();
+
+              if ($jobPreferences) {
+                foreach ($jobPreferences as $jobPreference) {
+                  if ($jobPreference->job_title) {
+                    foreach (json_decode($jobPreference->job_title, true) as $jobTitle) {
+                      array_push($arrJobTitles, strtolower($jobTitle));
+                    }
+                  }
+                }
+              }
+
+              $mergeIds = null;
+
+              if (count($arrJobTitles) > 0) {
+                for ($i = 0; $i < count($uniqueJobs) - 1; $i++) {
+                  $job = $helpers->select_all_individual("job", "id='$uniqueJobs[$i]'");
+
+                  if ($job) {
+                    if (in_array(strtolower($job->title), $arrJobTitles)) {
+                      array_push($newJobIds, $job->id);
+                    }
+                  }
+                }
+
+                $mergeIds = array_unique(array_merge($newJobIds, $uniqueJobs));
+              }
+
+              foreach ($mergeIds ? $mergeIds : $uniqueJobs as $jobId) :
                 $job = $helpers->select_all_individual("job", "id='$jobId'");
                 $company = $helpers->select_all_individual("company", "id='$job->company_id'");
               ?>

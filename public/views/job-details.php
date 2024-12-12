@@ -210,6 +210,25 @@ if (isset($_SESSION["id"])) {
                 <li class="mb-2"><strong class="text-black">Job Location:</strong> <?= $company->district ?></li>
                 <li class="mb-2"><strong class="text-black">Work Setup:</strong> <?= $job->location_type ?></li>
                 <li class="mb-2"><strong class="text-black">Salary:</strong> <?= $job->pay ?></li>
+
+                <?php
+                if ($job->industries) :
+                  $industry_ids = json_decode($job->industries, true);
+                ?>
+                  <li class="mb-2">
+                    <strong class="text-black"><?= count($industry_ids) > 1 ? "Industries:" : "Industry" ?></strong>
+                    <ul class="px-4">
+                      <?php
+                      foreach ($industry_ids as $industry_id):
+                        $industry_data = $helpers->select_all_individual("industries", "id = '$industry_id'");
+                      ?>
+                        <li>
+                          <?= $industry_data->name ?>
+                        </li>
+                      <?php endforeach; ?>
+                    </ul>
+                  </li>
+                <?php endif; ?>
               </ul>
             </div>
 
